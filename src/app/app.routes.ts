@@ -17,6 +17,18 @@ export const routes: Routes = [
       {
         path: '',
         loadComponent: () => import('./features/dashboard/dashboard.component')
+      },
+      {
+        path: 'reports',
+        loadComponent: () => import('./features/reports/reports.component')
+      },
+      {
+        path: 'users',
+        loadComponent: () => import('./features/users/users.component')
+      },
+      {
+        path: 'definitions',
+        loadComponent: () => import('./features/definitions/definitions.component')
       }
     ]
   },

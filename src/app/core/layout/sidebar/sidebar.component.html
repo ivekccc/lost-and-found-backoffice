@@ -3,7 +3,22 @@
   <ul class="nav flex-column gap-1">
     <li class="nav-item">
       <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Dashboard
+        <i class="fa-solid fa-gauge"></i> Dashboard
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/reports" routerLinkActive="active">
+        <i class="fa-solid fa-file-lines"></i> Reports
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/users" routerLinkActive="active">
+        <i class="fa-solid fa-users"></i> Users
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/definitions" routerLinkActive="active">
+        <i class="fa-solid fa-sliders"></i> Definitions
       </a>
     </li>
   </ul>

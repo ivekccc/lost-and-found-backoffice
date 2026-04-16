@@ -17,6 +17,12 @@
   color: rgba(255, 255, 255, 0.75);
   border-radius: 6px;
 
+  i {
+    width: 20px;
+    margin-right: 0.5rem;
+    text-align: center;
+  }
+
   &:hover {
     color: #fff;
     background-color: rgba(255, 255, 255, 0.05);
