@@ -1,7 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { TestService } from './core/services';
-import { tap } from 'rxjs';
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
