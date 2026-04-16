@@ -1,0 +1,9 @@
+<header class="header">
+  <div class="header__actions">
+    @if (user()) {
+      <span class="header__user">{{ fullName() }}</span>
+      <span class="badge bg-primary">{{ user()!.role }}</span>
+    }
+    <button class="btn btn-outline-secondary btn-sm" (click)="logout()">Logout</button>
+  </div>
+</header>
