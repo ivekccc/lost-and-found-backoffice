@@ -1,0 +1,53 @@
+<div class="login">
+  <div class="card shadow login__card">
+    <div class="card-body p-4">
+      <h3 class="card-title text-center mb-4">Lost & Found Admin</h3>
+
+      @if (error()) {
+        <div class="alert alert-danger">{{ error() }}</div>
+      }
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input
+            type="email"
+            class="form-control"
+            id="email"
+            formControlName="email"
+            [class.is-invalid]="loginForm.controls.email.touched && loginForm.controls.email.invalid"
+          />
+          @if (loginForm.controls.email.touched && loginForm.controls.email.errors) {
+            <div class="invalid-feedback">
+              @if (loginForm.controls.email.errors['required']) {
+                Email is required
+              } @else if (loginForm.controls.email.errors['email']) {
+                Invalid email format
+              }
+            </div>
+          }
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            id="password"
+            formControlName="password"
+            [class.is-invalid]="loginForm.controls.password.touched && loginForm.controls.password.invalid"
+          />
+          @if (loginForm.controls.password.touched && loginForm.controls.password.errors) {
+            <div class="invalid-feedback">Password is required</div>
+          }
+        </div>
+        <button type="submit" class="btn btn-primary w-100" [disabled]="loading()">
+          @if (loading()) {
+            Logging in...
+          } @else {
+            Login
+          }
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

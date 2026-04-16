@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.lostandfound.com',
+  apiUrl: 'http://localhost:8082',
 };

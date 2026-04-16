@@ -1,0 +1,20 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 56px;
+  padding: 0 1.5rem;
+  background-color: #fff;
+  border-bottom: 1px solid #dee2e6;
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__user {
+    font-weight: 500;
+    font-size: 0.875rem;
+  }
+}
