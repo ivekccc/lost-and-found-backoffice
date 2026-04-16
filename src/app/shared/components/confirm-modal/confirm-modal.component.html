@@ -1,0 +1,24 @@
+@if (data.title) {
+  <div class="modal-header">
+    <h5 class="modal-title">{{ data.title }}</h5>
+    @if (data.visibleCloseButton !== false) {
+      <button type="button" class="btn-close" (click)="cancel()"></button>
+    }
+  </div>
+}
+<div class="modal-body">
+  <p>{{ data.messageContent }}</p>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-outline-secondary" (click)="cancel()">
+    {{ data.cancelText || 'Cancel' }}
+  </button>
+  <button
+    class="btn"
+    [class.btn-danger]="data.destructive"
+    [class.btn-primary]="!data.destructive"
+    (click)="confirm()"
+  >
+    {{ data.confirmText || 'Confirm' }}
+  </button>
+</div>
