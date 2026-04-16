@@ -33,3 +33,113 @@ body {
   color: var(--app-form-invalid-color);
   margin-top: 0.25rem;
 }
+
+$modal-width: 420px;
+$modal-width-lg: 1040px;
+$modal-padding: 32px;
+
+.modal {
+  .bo-modal {
+    width: $modal-width !important;
+    max-width: $modal-width !important;
+    height: 100%;
+    margin: 0 !important;
+    overflow: hidden;
+
+    .modal-content {
+      width: $modal-width;
+      padding: $modal-padding;
+      border: none;
+      border-radius: 0;
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    &-right {
+      position: absolute;
+      top: 0;
+      right: 0;
+    }
+
+    &-left {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  }
+
+  .bo-modal-large {
+    width: $modal-width-lg !important;
+    max-width: $modal-width-lg !important;
+    height: 100%;
+    margin: 0 !important;
+    overflow: hidden;
+
+    .modal-content {
+      width: $modal-width-lg;
+      padding: $modal-padding;
+      border: none;
+      border-radius: 0;
+      height: 100%;
+      overflow-y: auto;
+    }
+  }
+
+  &.fade {
+    .bo-modal-left {
+      transition: transform 0.3s ease-out !important;
+      transform: translate(-100%, 0) !important;
+    }
+    .bo-modal-right {
+      transition: transform 0.3s ease-out !important;
+      transform: translate(100%, 0) !important;
+    }
+  }
+
+  &.show {
+    .bo-modal-left,
+    .bo-modal-right {
+      transform: none !important;
+    }
+  }
+}
+
+.bo-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $modal-padding;
+
+  h4 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0;
+  }
+
+  .btn-close-modal {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0.25rem;
+
+    &:hover {
+      color: #000;
+    }
+  }
+}
+
+.bo-modal-body {
+  margin-bottom: $modal-padding;
+
+  label {
+    margin-bottom: 2px;
+  }
+}
+
+.bo-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

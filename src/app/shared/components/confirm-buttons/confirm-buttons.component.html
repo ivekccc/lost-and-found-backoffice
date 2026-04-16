@@ -1,0 +1,43 @@
+<div
+  class="d-flex w-100"
+  [class.justify-content-end]="!justifyContentStart"
+  [class.justify-content-start]="justifyContentStart"
+  [class.mt-2]="marginTop"
+  [class.mb-2]="marginBottom">
+  @if (showDeleteButton) {
+    <button
+      class="btn btn-danger"
+      [class.me-auto]="!justifyContentStart"
+      [class.me-2]="justifyContentStart"
+      [class.btn-sm]="smallButtons"
+      type="button"
+      [disabled]="deleteButtonDisabled"
+      (click)="emitDelete()">
+      <span>{{ deleteButtonText }}</span>
+    </button>
+  }
+  @if (showCancelButton) {
+    <button
+      class="btn btn-outline-primary"
+      [class.btn-sm]="smallButtons"
+      [class.me-2]="showSaveButton"
+      type="button"
+      [disabled]="cancelButtonDisabled"
+      (click)="emitCancel()">
+      <span>{{ cancelButtonText }}</span>
+    </button>
+  }
+  @if (showSaveButton) {
+    <button
+      class="btn btn-primary"
+      [class.btn-sm]="smallButtons"
+      attr.type="{{ saveButtonTypeSubmit ? 'submit' : 'button' }}"
+      [disabled]="saveButtonDisabled"
+      (click)="emitSave()">
+      @if (saveButtonText === 'Save') {
+        <i class="fa-solid fa-floppy-disk me-2"></i>
+      }
+      <span>{{ saveButtonText }}</span>
+    </button>
+  }
+</div>

@@ -8,7 +8,9 @@
   <app-data-table
     [data]="reports()"
     [headingText]="'All Reports'"
+    [buttonText]="'New Report'"
     [emptyMessage]="'No reports found'"
+    (addNew)="addNewReport()"
   >
     <ng-template dataTableHeaderTemplate>
       <tr>

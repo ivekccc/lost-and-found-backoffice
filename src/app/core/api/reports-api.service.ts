@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ReportListDto, ReportDetailsDto, ReportType } from '@lost-and-found/api';
+import { ReportListDto, ReportDetailsDto, ReportType, CreateReportRequest } from '@lost-and-found/api';
 import { HttpParams } from '@angular/common/http';
 import { ApiService } from './api.service';
 
@@ -18,5 +18,9 @@ export class ReportsApiService {
 
   getReportById(id: number): Observable<ReportDetailsDto> {
     return this.api.get<ReportDetailsDto>(`reports/${id}`);
+  }
+
+  createReport(data: CreateReportRequest): Observable<ReportDetailsDto> {
+    return this.api.post<ReportDetailsDto>('reports', data);
   }
 }

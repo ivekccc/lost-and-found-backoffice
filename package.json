@@ -20,6 +20,7 @@
     "@angular/router": "^19.2.0",
     "@fortawesome/fontawesome-free": "^7.2.0",
     "@lost-and-found/api": "file:../lost-and-found-api",
+    "@ng-select/ng-select": "^13.9.1",
     "axios": "^1.13.4",
     "bootstrap": "^5.3.8",
     "ngx-bootstrap": "^21.0.1",
