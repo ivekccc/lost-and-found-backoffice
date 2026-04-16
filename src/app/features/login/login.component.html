@@ -8,39 +8,41 @@
       }
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <div class="mb-3">
-          <label for="email" class="form-label">Email</label>
+        <div class="form-control-wrapper">
+          <label for="email">Email</label>
           <input
             type="email"
             class="form-control"
             id="email"
             formControlName="email"
-            [class.is-invalid]="loginForm.controls.email.touched && loginForm.controls.email.invalid"
+            placeholder="Enter your email"
+            [ngClass]="{ 'is-invalid': loginForm.controls.email.touched && loginForm.controls.email.invalid }"
           />
-          @if (loginForm.controls.email.touched && loginForm.controls.email.errors) {
-            <div class="invalid-feedback">
-              @if (loginForm.controls.email.errors['required']) {
+          @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) {
+            <span class="error-text">
+              @if (loginForm.controls.email.errors?.['required']) {
                 Email is required
-              } @else if (loginForm.controls.email.errors['email']) {
+              } @else if (loginForm.controls.email.errors?.['email']) {
                 Invalid email format
               }
-            </div>
+            </span>
           }
         </div>
-        <div class="mb-3">
-          <label for="password" class="form-label">Password</label>
+        <div class="form-control-wrapper">
+          <label for="password">Password</label>
           <input
             type="password"
             class="form-control"
             id="password"
             formControlName="password"
-            [class.is-invalid]="loginForm.controls.password.touched && loginForm.controls.password.invalid"
+            placeholder="Enter your password"
+            [ngClass]="{ 'is-invalid': loginForm.controls.password.touched && loginForm.controls.password.invalid }"
           />
-          @if (loginForm.controls.password.touched && loginForm.controls.password.errors) {
-            <div class="invalid-feedback">Password is required</div>
+          @if (loginForm.controls.password.touched && loginForm.controls.password.invalid) {
+            <span class="error-text">Password is required</span>
           }
         </div>
-        <button type="submit" class="btn btn-primary w-100" [disabled]="loading()">
+        <button type="submit" class="btn btn-primary w-100 mt-2" [disabled]="loading()">
           @if (loading()) {
             Logging in...
           } @else {

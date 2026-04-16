@@ -1,1 +1,35 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --app-font-family: "Inter", sans-serif;
+  --app-border-color: #dee2e6;
+  --app-form-invalid-color: #dc3545;
+  --app-font-size-xs: 0.75rem;
+  --app-font-size-sm: 0.875rem;
+}
+
+body {
+  font-family: var(--app-font-family);
+}
+
+.form-control::placeholder {
+  opacity: 70%;
+}
+
+.form-control-wrapper {
+  position: relative;
+  margin-bottom: 1rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: var(--app-font-size-sm);
+    font-weight: 500;
+  }
+}
+
+.error-text {
+  position: absolute;
+  top: 100%;
+  font-size: var(--app-font-size-xs);
+  color: var(--app-form-invalid-color);
+  margin-top: 0.25rem;
+}
