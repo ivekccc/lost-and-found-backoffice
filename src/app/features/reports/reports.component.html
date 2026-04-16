@@ -1,2 +1,40 @@
-<h4>Reports</h4>
-<p class="text-muted">Reports management.</p>
+@if (loading()) {
+  <div class="d-flex justify-content-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+} @else {
+  <app-data-table
+    [data]="reports()"
+    [headingText]="'All Reports'"
+    [emptyMessage]="'No reports found'"
+  >
+    <ng-template dataTableHeaderTemplate>
+      <tr>
+        <th>Title</th>
+        <th>Type</th>
+        <th>Category</th>
+        <th>Status</th>
+        <th>Location</th>
+        <th>Created</th>
+      </tr>
+    </ng-template>
+    <ng-template dataTableRowTemplate let-row="row">
+      <tr>
+        <td>{{ row.title }}</td>
+        <td>
+          <span class="badge" [class.bg-danger]="row.type === 'LOST'" [class.bg-success]="row.type === 'FOUND'">
+            {{ row.type }}
+          </span>
+        </td>
+        <td>{{ row.categoryName }}</td>
+        <td>
+          <span class="badge bg-secondary">{{ row.status }}</span>
+        </td>
+        <td>{{ row.location?.formattedAddress || '-' }}</td>
+        <td>{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+      </tr>
+    </ng-template>
+  </app-data-table>
+}
