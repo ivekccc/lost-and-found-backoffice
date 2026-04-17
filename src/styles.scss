@@ -143,3 +143,57 @@ $modal-padding: 32px;
   justify-content: flex-end;
   gap: 0.5rem;
 }
+
+.data-table-container {
+  table {
+    margin: 0;
+
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+
+      th {
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: #6c757d;
+        white-space: nowrap;
+        background-color: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        border-bottom: 2px solid #dee2e6;
+        padding: 0.65rem 0.75rem;
+      }
+    }
+
+    tbody {
+      tr {
+        transition: background-color 0.15s ease;
+        cursor: pointer;
+
+        &:nth-child(odd) {
+          background-color: #ffffff;
+        }
+
+        &:nth-child(even) {
+          background-color: #fafbfc;
+        }
+
+        &:hover {
+          background-color: #fef1f0;
+        }
+      }
+
+      td {
+        font-size: 0.875rem;
+        vertical-align: middle;
+        padding: 0.85rem 0.75rem;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        max-width: 400px;
+      }
+    }
+  }
+}

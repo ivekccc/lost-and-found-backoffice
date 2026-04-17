@@ -20,6 +20,7 @@ import {
 } from '../../shared/components/data-table/data-table.component';
 import { DataTableSkeletonComponent } from '../../shared/components/data-table-skeleton/data-table-skeleton.component';
 import { DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-reports',
@@ -30,6 +31,7 @@ import { DatePipe } from '@angular/common';
     DataTableRowTemplateDirective,
     DataTableSkeletonComponent,
     DatePipe,
+    RouterLink,
   ],
   templateUrl: './reports.component.html',
   styleUrl: './reports.component.scss',

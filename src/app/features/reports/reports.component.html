@@ -25,7 +25,7 @@
       </tr>
     </ng-template>
     <ng-template dataTableRowTemplate let-row="row">
-      <tr>
+      <tr [routerLink]="['/reports', row.id]">
         <td>{{ row.title }}</td>
         <td>
           <span class="badge" [class.bg-danger]="row.type === 'LOST'" [class.bg-success]="row.type === 'FOUND'">

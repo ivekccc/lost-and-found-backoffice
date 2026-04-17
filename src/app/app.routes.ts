@@ -23,6 +23,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/reports/reports.component')
       },
       {
+        path: 'reports/:id',
+        loadComponent: () => import('./features/reports/report-details/report-details.component')
+      },
+      {
         path: 'users',
         loadComponent: () => import('./features/users/users.component')
       },

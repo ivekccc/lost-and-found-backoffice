@@ -1,0 +1,107 @@
+@if (loading()) {
+  <app-details-skeleton />
+} @else if (error()) {
+  <app-error-state
+    title="Unable to load report"
+    message="The report could not be loaded. It may not exist or the server is unreachable."
+    retryText="Retry"
+    (retry)="retryLoad()"
+  />
+} @else if (report()) {
+  <div class="d-flex align-items-center mb-4">
+    <a routerLink="/reports" class="btn btn-sm btn-link text-secondary me-2">
+      <i class="fa-solid fa-arrow-left"></i>
+    </a>
+    <h4 class="fw-bold mb-0">{{ report()!.title }}</h4>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="text-muted text-uppercase small mb-3">Details</h6>
+
+          <div class="row mb-2">
+            <div class="col-4 text-muted">Type</div>
+            <div class="col-8">
+              <span class="badge"
+                [class.bg-danger]="report()!.type === 'LOST'"
+                [class.bg-success]="report()!.type === 'FOUND'">
+                {{ report()!.type }}
+              </span>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-4 text-muted">Category</div>
+            <div class="col-8">{{ report()!.categoryName }}</div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-4 text-muted">Status</div>
+            <div class="col-8">
+              <span class="badge bg-secondary">{{ report()!.status }}</span>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-4 text-muted">Location</div>
+            <div class="col-8">{{ report()!.location.formattedAddress || '-' }}</div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-4 text-muted">Created</div>
+            <div class="col-8">{{ report()!.createdAt | date: 'dd.MM.yyyy HH:mm' }}</div>
+          </div>
+
+          @if (report()!.expiresAt) {
+            <div class="row mb-2">
+              <div class="col-4 text-muted">Expires</div>
+              <div class="col-8">{{ report()!.expiresAt | date: 'dd.MM.yyyy HH:mm' }}</div>
+            </div>
+          }
+
+          @if (report()!.description) {
+            <hr />
+            <h6 class="text-muted text-uppercase small mb-2">Description</h6>
+            <p class="mb-0">{{ report()!.description }}</p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="text-muted text-uppercase small mb-3">Contact</h6>
+          <div class="mb-2">
+            <small class="text-muted d-block">Email</small>
+            <span>{{ report()!.contactEmail || '-' }}</span>
+          </div>
+          <div>
+            <small class="text-muted d-block">Phone</small>
+            <span>{{ report()!.contactPhone || '-' }}</span>
+          </div>
+        </div>
+      </div>
+
+      @if (report()!.images && report()!.images!.length > 0) {
+        <div class="card mt-3">
+          <div class="card-body">
+            <h6 class="text-muted text-uppercase small mb-3">Images</h6>
+            <div class="d-flex flex-wrap gap-2">
+              @for (image of report()!.images; track image.id) {
+                <img
+                  [src]="image.imageUrl"
+                  alt="Report image"
+                  class="rounded"
+                  style="width: 100px; height: 100px; object-fit: cover;"
+                />
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}

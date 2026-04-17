@@ -3,35 +3,3 @@
   border: 1px solid #dee2e6;
   border-radius: 8px;
 }
-
-table {
-  thead {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background-color: #f8f9fa;
-
-    th {
-      font-weight: 600;
-      font-size: 0.875rem;
-      white-space: nowrap;
-      border-bottom: 2px solid #dee2e6;
-    }
-  }
-
-  tbody {
-    tr {
-      cursor: pointer;
-      transition: background-color 0.15s ease;
-
-      &:hover {
-        background-color: #f8f9fa;
-      }
-    }
-
-    td {
-      font-size: 0.875rem;
-      vertical-align: middle;
-    }
-  }
-}

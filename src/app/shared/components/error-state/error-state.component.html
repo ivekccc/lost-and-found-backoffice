@@ -1,0 +1,13 @@
+<div class="error-state text-center py-5">
+  <div class="error-state__icon mb-3">
+    <i class="fa-solid" [class]="icon"></i>
+  </div>
+  <h5 class="mb-2">{{ title }}</h5>
+  <p class="text-muted mb-4">{{ message }}</p>
+  @if (showRetry) {
+    <button type="button" class="btn btn-outline-primary" (click)="onRetry()">
+      <i class="fa-solid fa-rotate-right me-2"></i>
+      {{ retryText }}
+    </button>
+  }
+</div>

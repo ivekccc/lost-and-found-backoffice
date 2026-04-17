@@ -1,0 +1,40 @@
+<div class="d-flex align-items-center mb-4 gap-2">
+  <div class="skeleton skeleton-icon"></div>
+  <div class="skeleton skeleton-title"></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-body">
+        <div class="skeleton skeleton-section-title mb-3"></div>
+        @for (_ of [0, 1, 2, 3, 4]; track $index) {
+          <div class="row mb-3">
+            <div class="col-4">
+              <div class="skeleton skeleton-label"></div>
+            </div>
+            <div class="col-8">
+              <div class="skeleton skeleton-value"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <div class="skeleton skeleton-section-title mb-3"></div>
+        <div class="mb-3">
+          <div class="skeleton skeleton-small mb-1"></div>
+          <div class="skeleton skeleton-value"></div>
+        </div>
+        <div>
+          <div class="skeleton skeleton-small mb-1"></div>
+          <div class="skeleton skeleton-value"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
