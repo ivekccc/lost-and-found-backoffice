@@ -1,7 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpParams } from '@angular/common/http';
-import { UserProfileDto, UserListDto, UserRole } from '@lost-and-found/api';
+import {
+  UserDetailsDto,
+  UserListDto,
+  UserProfileDto,
+  UserRole,
+} from '@lost-and-found/api';
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
@@ -18,5 +23,9 @@ export class UserApiService {
       params = params.append('role', role);
     }
     return this.api.get<UserListDto[]>('admin/users', params);
+  }
+
+  getUserById(id: number): Observable<UserDetailsDto> {
+    return this.api.get<UserDetailsDto>(`admin/users/${id}`);
   }
 }

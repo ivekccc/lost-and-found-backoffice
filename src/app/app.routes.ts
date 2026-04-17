@@ -31,6 +31,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/users/users.component')
       },
       {
+        path: 'users/:id',
+        loadComponent: () => import('./features/users/user-details/user-details.component')
+      },
+      {
         path: 'definitions',
         loadComponent: () => import('./features/definitions/definitions.component')
       }

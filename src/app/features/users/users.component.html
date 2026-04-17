@@ -24,7 +24,7 @@
       </tr>
     </ng-template>
     <ng-template dataTableRowTemplate let-row="row">
-      <tr>
+      <tr [routerLink]="['/users', row.id]">
         <td>{{ row.username }}</td>
         <td>{{ row.firstName }} {{ row.lastName }}</td>
         <td>{{ row.email }}</td>

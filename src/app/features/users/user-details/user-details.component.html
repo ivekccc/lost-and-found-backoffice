@@ -1,0 +1,94 @@
+@if (loading()) {
+  <app-details-skeleton />
+} @else if (error()) {
+  <app-error-state
+    title="Unable to load user"
+    message="The user could not be loaded. It may not exist or the server is unreachable."
+    retryText="Retry"
+    (retry)="retryLoad()"
+  />
+} @else if (user()) {
+  <div class="d-flex align-items-center mb-4">
+    <a routerLink="/users" class="btn btn-sm btn-link text-secondary me-2">
+      <i class="fa-solid fa-arrow-left"></i>
+    </a>
+    <h4 class="fw-bold mb-0">{{ user()!.firstName }} {{ user()!.lastName }}</h4>
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-secondary ms-3"
+      (click)="shareLink()"
+      [attr.aria-label]="linkCopied() ? 'Link copied' : 'Copy link'"
+    >
+      @if (linkCopied()) {
+        <i class="fa-solid fa-check me-1"></i>Copied
+      } @else {
+        <i class="fa-solid fa-share-nodes me-1"></i>Share
+      }
+    </button>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="text-muted text-uppercase small mb-3">Details</h6>
+
+          <div class="row mb-2">
+            <div class="col-4 text-muted">Username</div>
+            <div class="col-8">{{ user()!.username }}</div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-4 text-muted">First name</div>
+            <div class="col-8">{{ user()!.firstName || '-' }}</div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-4 text-muted">Last name</div>
+            <div class="col-8">{{ user()!.lastName || '-' }}</div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-4 text-muted">Role</div>
+            <div class="col-8">
+              <span class="badge bg-secondary">{{ user()!.role }}</span>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-4 text-muted">Status</div>
+            <div class="col-8">
+              <span class="badge"
+                [class.bg-success]="user()!.status === 'ACTIVE'"
+                [class.bg-danger]="user()!.status === 'BLOCKED'"
+                [class.bg-warning]="user()!.status === 'PARTIALLY_BLOCKED'">
+                {{ user()!.status }}
+              </span>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-4 text-muted">Created</div>
+            <div class="col-8">{{ user()!.createdAt | date: 'dd.MM.yyyy HH:mm' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="text-muted text-uppercase small mb-3">Contact</h6>
+          <div class="mb-2">
+            <small class="text-muted d-block">Email</small>
+            <span>{{ user()!.email || '-' }}</span>
+          </div>
+          <div>
+            <small class="text-muted d-block">Phone</small>
+            <span>{{ user()!.phoneNumber || '-' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

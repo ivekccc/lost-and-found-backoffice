@@ -6,6 +6,7 @@ import {
   signal,
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { UserListDto, UserRole } from '@lost-and-found/api';
 import { tap, catchError, EMPTY } from 'rxjs';
 import { UserApiService } from '../../core/api/user-api.service';
@@ -25,6 +26,7 @@ import { DataTableSkeletonComponent } from '../../shared/components/data-table-s
     DataTableRowTemplateDirective,
     DataTableSkeletonComponent,
     DatePipe,
+    RouterLink,
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss',
