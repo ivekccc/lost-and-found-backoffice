@@ -11,6 +11,7 @@
   "private": true,
   "dependencies": {
     "@angular/animations": "^21.2.9",
+    "@angular/cdk": "^21.2.7",
     "@angular/common": "^21.2.9",
     "@angular/compiler": "^21.2.9",
     "@angular/core": "^21.2.9",
@@ -24,6 +25,7 @@
     "axios": "^1.13.4",
     "bootstrap": "^5.3.8",
     "maplibre-gl": "^5.23.0",
+    "ng-gallery": "^12.0.0",
     "ngx-bootstrap": "^21.0.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
