@@ -12,11 +12,12 @@ import { tap, catchError, EMPTY } from 'rxjs';
 import { ReportsApiService } from '../../../core/api/reports-api.service';
 import { DetailsSkeletonComponent } from '../../../shared/components/details-skeleton/details-skeleton.component';
 import { ErrorStateComponent } from '../../../shared/components/error-state/error-state.component';
+import { MapViewComponent } from '../../../shared/components/map-view/map-view.component';
 
 @Component({
   selector: 'app-report-details',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, RouterLink, DetailsSkeletonComponent, ErrorStateComponent],
+  imports: [DatePipe, RouterLink, DetailsSkeletonComponent, ErrorStateComponent, MapViewComponent],
   templateUrl: './report-details.component.html',
   styleUrl: './report-details.component.scss',
 })

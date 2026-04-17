@@ -23,6 +23,7 @@
     "@ng-select/ng-select": "^21.8.0",
     "axios": "^1.13.4",
     "bootstrap": "^5.3.8",
+    "maplibre-gl": "^5.23.0",
     "ngx-bootstrap": "^21.0.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

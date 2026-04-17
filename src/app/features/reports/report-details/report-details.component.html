@@ -45,11 +45,6 @@
           </div>
 
           <div class="row mb-2">
-            <div class="col-4 text-muted">Location</div>
-            <div class="col-8">{{ report()!.location.formattedAddress || '-' }}</div>
-          </div>
-
-          <div class="row mb-2">
             <div class="col-4 text-muted">Created</div>
             <div class="col-8">{{ report()!.createdAt | date: 'dd.MM.yyyy HH:mm' }}</div>
           </div>
@@ -68,6 +63,21 @@
           }
         </div>
       </div>
+
+      @if (report()!.location.latitude && report()!.location.longitude) {
+        <div class="card mt-3">
+          <div class="card-body">
+            <h6 class="text-muted text-uppercase small mb-3">Location</h6>
+            <div class="mb-3">{{ report()!.location.formattedAddress || '-' }}</div>
+            <div style="height: 350px;">
+              <app-map-view
+                [latitude]="report()!.location.latitude!"
+                [longitude]="report()!.location.longitude!"
+              />
+            </div>
+          </div>
+        </div>
+      }
     </div>
 
     <div class="col-md-4">
