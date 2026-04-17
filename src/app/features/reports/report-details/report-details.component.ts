@@ -13,11 +13,19 @@ import { ReportsApiService } from '../../../core/api/reports-api.service';
 import { DetailsSkeletonComponent } from '../../../shared/components/details-skeleton/details-skeleton.component';
 import { ErrorStateComponent } from '../../../shared/components/error-state/error-state.component';
 import { MapViewComponent } from '../../../shared/components/map-view/map-view.component';
+import { ImageGalleryComponent } from '../../../shared/components/image-gallery/image-gallery.component';
 
 @Component({
   selector: 'app-report-details',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, RouterLink, DetailsSkeletonComponent, ErrorStateComponent, MapViewComponent],
+  imports: [
+    DatePipe,
+    RouterLink,
+    DetailsSkeletonComponent,
+    ErrorStateComponent,
+    MapViewComponent,
+    ImageGalleryComponent,
+  ],
   templateUrl: './report-details.component.html',
   styleUrl: './report-details.component.scss',
 })

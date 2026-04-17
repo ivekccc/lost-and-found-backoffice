@@ -64,6 +64,15 @@
         </div>
       </div>
 
+      @if (report()!.images && report()!.images!.length > 0) {
+        <div class="card mt-3">
+          <div class="card-body">
+            <h6 class="text-muted text-uppercase small mb-3">Images</h6>
+            <app-image-gallery [images]="report()!.images!" />
+          </div>
+        </div>
+      }
+
       @if (report()!.location.latitude && report()!.location.longitude) {
         <div class="card mt-3">
           <div class="card-body">
@@ -95,23 +104,6 @@
         </div>
       </div>
 
-      @if (report()!.images && report()!.images!.length > 0) {
-        <div class="card mt-3">
-          <div class="card-body">
-            <h6 class="text-muted text-uppercase small mb-3">Images</h6>
-            <div class="d-flex flex-wrap gap-2">
-              @for (image of report()!.images; track image.id) {
-                <img
-                  [src]="image.imageUrl"
-                  alt="Report image"
-                  class="rounded"
-                  style="width: 100px; height: 100px; object-fit: cover;"
-                />
-              }
-            </div>
-          </div>
-        </div>
-      }
     </div>
   </div>
 }
