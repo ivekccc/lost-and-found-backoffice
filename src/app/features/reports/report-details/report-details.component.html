@@ -13,6 +13,18 @@
       <i class="fa-solid fa-arrow-left"></i>
     </a>
     <h4 class="fw-bold mb-0">{{ report()!.title }}</h4>
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-secondary ms-3"
+      (click)="shareLink()"
+      [attr.aria-label]="linkCopied() ? 'Link copied' : 'Copy link'"
+    >
+      @if (linkCopied()) {
+        <i class="fa-solid fa-check me-1"></i>Copied
+      } @else {
+        <i class="fa-solid fa-share-nodes me-1"></i>Share
+      }
+    </button>
   </div>
 
   <div class="row g-3">

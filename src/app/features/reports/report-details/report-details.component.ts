@@ -36,6 +36,7 @@ export default class ReportDetailsComponent implements OnInit {
   report = signal<ReportDetailsDto | null>(null);
   loading = signal(true);
   error = signal(false);
+  linkCopied = signal(false);
 
   ngOnInit(): void {
     this._loadReport();
@@ -43,6 +44,13 @@ export default class ReportDetailsComponent implements OnInit {
 
   retryLoad(): void {
     this._loadReport();
+  }
+
+  shareLink(): void {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      this.linkCopied.set(true);
+      setTimeout(() => this.linkCopied.set(false), 2000);
+    });
   }
 
   private _loadReport(): void {
