@@ -1,2 +1,41 @@
-<h4>Users</h4>
-<p class="text-muted">Users management.</p>
+@if (loading()) {
+  <div class="d-flex justify-content-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+} @else {
+  <app-data-table
+    [data]="users()"
+    [headingText]="'All Users'"
+    [emptyMessage]="'No users found'"
+  >
+    <ng-template dataTableHeaderTemplate>
+      <tr>
+        <th>Username</th>
+        <th>Full Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Status</th>
+        <th>Created</th>
+      </tr>
+    </ng-template>
+    <ng-template dataTableRowTemplate let-row="row">
+      <tr>
+        <td>{{ row.username }}</td>
+        <td>{{ row.firstName }} {{ row.lastName }}</td>
+        <td>{{ row.email }}</td>
+        <td>{{ row.phoneNumber || '-' }}</td>
+        <td>
+          <span class="badge"
+            [class.bg-success]="row.status === 'ACTIVE'"
+            [class.bg-danger]="row.status === 'BLOCKED'"
+            [class.bg-warning]="row.status === 'PARTIALLY_BLOCKED'">
+            {{ row.status }}
+          </span>
+        </td>
+        <td>{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+      </tr>
+    </ng-template>
+  </app-data-table>
+}
