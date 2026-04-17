@@ -18,6 +18,7 @@ import {
   DataTableHeaderTemplateDirective,
   DataTableRowTemplateDirective,
 } from '../../shared/components/data-table/data-table.component';
+import { DataTableSkeletonComponent } from '../../shared/components/data-table-skeleton/data-table-skeleton.component';
 import { DatePipe } from '@angular/common';
 
 @Component({
@@ -27,6 +28,7 @@ import { DatePipe } from '@angular/common';
     DataTableComponent,
     DataTableHeaderTemplateDirective,
     DataTableRowTemplateDirective,
+    DataTableSkeletonComponent,
     DatePipe,
   ],
   templateUrl: './reports.component.html',
@@ -41,7 +43,11 @@ export default class ReportsComponent implements OnInit {
   loading = signal(true);
 
   ngOnInit(): void {
-    this.loadReports();
+    this._loadReports();
+  }
+
+  reloadReports(): void {
+    this._loadReports();
   }
 
   addNewReport(): void {
@@ -56,7 +62,8 @@ export default class ReportsComponent implements OnInit {
       });
   }
 
-  private loadReports(): void {
+  private _loadReports(): void {
+    this.loading.set(true);
     this.reportsApi
       .getReports()
       .pipe(

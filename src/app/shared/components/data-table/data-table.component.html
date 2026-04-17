@@ -1,9 +1,21 @@
 <div class="data-table-heading d-flex align-items-center justify-content-between py-3">
-  @if (headingText) {
-    <h5 class="fw-bold mb-0">
-      {{ headingText }} {{ data.length ? "(" + data.length + ")" : "" }}
-    </h5>
-  }
+  <div class="d-flex align-items-center gap-2">
+    @if (headingText) {
+      <h5 class="fw-bold mb-0">
+        {{ headingText }} {{ data.length ? "(" + data.length + ")" : "" }}
+      </h5>
+    }
+    @if (showReload) {
+      <button
+        type="button"
+        class="btn btn-sm btn-link text-secondary"
+        title="Reload"
+        (click)="onReload()"
+      >
+        <i class="fa-solid fa-rotate-right"></i>
+      </button>
+    }
+  </div>
   @if (buttonText) {
     <button
       type="button"

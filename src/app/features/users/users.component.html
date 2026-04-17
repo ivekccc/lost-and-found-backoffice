@@ -1,14 +1,17 @@
 @if (loading()) {
-  <div class="d-flex justify-content-center py-5">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </div>
+  <app-data-table-skeleton
+    [showReload]="true"
+    [showButton]="true"
+    [columnCount]="6"
+  />
 } @else {
   <app-data-table
     [data]="users()"
     [headingText]="'All Users'"
+    [buttonText]="'New User'"
     [emptyMessage]="'No users found'"
+    [showReload]="true"
+    (reload)="reloadUsers()"
   >
     <ng-template dataTableHeaderTemplate>
       <tr>

@@ -1,2 +1,35 @@
-<h4>Definitions</h4>
-<p class="text-muted">Definitions management.</p>
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item">
+    <button class="nav-link active">Report Categories</button>
+  </li>
+</ul>
+
+@if (loading()) {
+  <app-data-table-skeleton
+    [showReload]="true"
+    [showButton]="true"
+    [columnCount]="2"
+  />
+} @else {
+  <app-data-table
+    [data]="categories()"
+    [headingText]="'Report Categories'"
+    [buttonText]="'New Category'"
+    [emptyMessage]="'No categories found'"
+    [showReload]="true"
+    (reload)="reloadCategories()"
+  >
+    <ng-template dataTableHeaderTemplate>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+      </tr>
+    </ng-template>
+    <ng-template dataTableRowTemplate let-row="row">
+      <tr>
+        <td>{{ row.id }}</td>
+        <td>{{ row.name }}</td>
+      </tr>
+    </ng-template>
+  </app-data-table>
+}

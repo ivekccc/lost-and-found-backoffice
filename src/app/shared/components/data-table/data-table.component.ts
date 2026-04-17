@@ -41,10 +41,16 @@ export class DataTableComponent {
   @Input() buttonText = '';
   @Input() disableAddNew = false;
   @Input() emptyMessage = 'No items found';
+  @Input() showReload = false;
 
   @Output() addNew = new EventEmitter<void>();
+  @Output() reload = new EventEmitter<void>();
 
   onAddNewData(): void {
     this.addNew.emit();
+  }
+
+  onReload(): void {
+    this.reload.emit();
   }
 }

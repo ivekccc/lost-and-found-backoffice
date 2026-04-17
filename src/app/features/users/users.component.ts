@@ -14,6 +14,7 @@ import {
   DataTableHeaderTemplateDirective,
   DataTableRowTemplateDirective,
 } from '../../shared/components/data-table/data-table.component';
+import { DataTableSkeletonComponent } from '../../shared/components/data-table-skeleton/data-table-skeleton.component';
 
 @Component({
   selector: 'app-users',
@@ -22,6 +23,7 @@ import {
     DataTableComponent,
     DataTableHeaderTemplateDirective,
     DataTableRowTemplateDirective,
+    DataTableSkeletonComponent,
     DatePipe,
   ],
   templateUrl: './users.component.html',
@@ -34,6 +36,15 @@ export default class UsersComponent implements OnInit {
   loading = signal(true);
 
   ngOnInit(): void {
+    this._loadUsers();
+  }
+
+  reloadUsers(): void {
+    this._loadUsers();
+  }
+
+  private _loadUsers(): void {
+    this.loading.set(true);
     this.userApi
       .getAllUsers(UserRole.USER)
       .pipe(

@@ -1,0 +1,38 @@
+<div class="data-table-heading d-flex align-items-center justify-content-between py-3">
+  <div class="d-flex align-items-center gap-2">
+    @if (showHeading) {
+      <div class="skeleton skeleton-heading"></div>
+    }
+    @if (showReload) {
+      <div class="skeleton skeleton-icon"></div>
+    }
+  </div>
+  @if (showButton) {
+    <div class="skeleton skeleton-button"></div>
+  }
+</div>
+
+<div class="data-table-container">
+  <table class="table mb-0">
+    <thead>
+      <tr>
+        @for (column of columns; track column) {
+          <th>
+            <div class="skeleton skeleton-cell skeleton-cell-header"></div>
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows; track row) {
+        <tr>
+          @for (column of columns; track column) {
+            <td>
+              <div class="skeleton skeleton-cell"></div>
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

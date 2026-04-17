@@ -1,0 +1,63 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.data-table-container {
+  overflow: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+}
+
+table {
+  width: 100%;
+  margin: 0;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #e9ecef 25%, #f5f5f5 50%, #e9ecef 75%);
+  background-size: 200% 100%;
+  border-radius: 4px;
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.skeleton-heading {
+  width: 180px;
+  height: 24px;
+}
+
+.skeleton-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.skeleton-button {
+  width: 140px;
+  height: 38px;
+  border-radius: 6px;
+}
+
+.skeleton-cell {
+  width: 80%;
+  height: 20px;
+}
+
+.skeleton-cell-header {
+  height: 18px;
+  width: 60%;
+}
+
+td,
+th {
+  padding: 1.15rem 0.75rem;
+}
+
+@keyframes skeleton-pulse {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
