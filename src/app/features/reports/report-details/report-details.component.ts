@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
-import { ReportDetailsDto } from '@lost-and-found/api';
+import { AdminReportDetailsDto } from '@lost-and-found/api';
 import { tap, catchError, EMPTY } from 'rxjs';
 import { ReportsApiService } from '../../../core/api/reports-api.service';
 import { DetailsSkeletonComponent } from '../../../shared/components/details-skeleton/details-skeleton.component';
@@ -33,7 +33,7 @@ export default class ReportDetailsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private reportsApi = inject(ReportsApiService);
 
-  report = signal<ReportDetailsDto | null>(null);
+  report = signal<AdminReportDetailsDto | null>(null);
   loading = signal(true);
   error = signal(false);
   linkCopied = signal(false);
