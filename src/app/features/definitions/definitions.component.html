@@ -21,7 +21,7 @@
 
 @if (activeTab() === 'categories') {
   @if (categoriesLoading()) {
-    <app-data-table-skeleton [showReload]="true" [columnCount]="3" />
+    <app-data-table-skeleton [showReload]="true" [columnCount]="5" />
   } @else {
     <app-data-table
       [data]="categories()"
@@ -33,6 +33,7 @@
       <ng-template dataTableHeaderTemplate>
         <tr>
           <th>ID</th>
+          <th>Image</th>
           <th>Name</th>
           <th>Min Questions</th>
           <th class="text-end">Actions</th>
@@ -41,9 +42,28 @@
       <ng-template dataTableRowTemplate let-row="row">
         <tr>
           <td>{{ row.id }}</td>
+          <td>
+            @if (row.imageUrl) {
+              <img
+                [src]="row.imageUrl"
+                alt="{{ row.name }}"
+                style="height: 40px; width: 40px; object-fit: contain"
+                class="rounded border"
+              />
+            } @else {
+              <span class="text-muted"><i class="fa-solid fa-image"></i></span>
+            }
+          </td>
           <td>{{ row.name }}</td>
           <td>{{ row.minQuestions }}</td>
           <td class="text-end">
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary me-2"
+              (click)="editCategoryImage(row)"
+            >
+              <i class="fa-solid fa-image me-1"></i> Image
+            </button>
             <button
               type="button"
               class="btn btn-sm btn-outline-primary"

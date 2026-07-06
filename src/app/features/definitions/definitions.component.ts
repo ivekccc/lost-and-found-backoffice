@@ -27,6 +27,7 @@ import {
 import { DataTableSkeletonComponent } from '../../shared/components/data-table-skeleton/data-table-skeleton.component';
 import { MinQuestionsFormComponent } from './min-questions-form/min-questions-form.component';
 import { QuestionTemplateFormComponent } from './question-template-form/question-template-form.component';
+import { CategoryImageFormComponent } from './category-image-form/category-image-form.component';
 
 type DefinitionsTab = 'categories' | 'templates';
 
@@ -95,6 +96,22 @@ export default class DefinitionsComponent implements OnInit {
       this.categories.update((categories) =>
         categories.map((item) =>
           item.id === category.id ? { ...item, minQuestions } : item,
+        ),
+      );
+    });
+  }
+
+  editCategoryImage(category: ReportCategoryDto): void {
+    const modalRef = this.modalService.openRightModal(CategoryImageFormComponent, {
+      initialState: { category },
+    });
+    const form = modalRef.content as CategoryImageFormComponent;
+
+    form.onSave.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((imageUrl) => {
+      modalRef.hide();
+      this.categories.update((categories) =>
+        categories.map((item) =>
+          item.id === category.id ? { ...item, imageUrl } : item,
         ),
       );
     });

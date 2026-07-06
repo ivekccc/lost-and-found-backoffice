@@ -2,9 +2,14 @@ import { inject } from '@angular/core';
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { environment } from '../../../environments/environment';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
+
+  if (!req.url.startsWith(environment.apiUrl)) {
+    return next(req);
+  }
 
   if (req.url.includes('/auth/login') || req.url.includes('/auth/refresh')) {
     return next(req);

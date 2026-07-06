@@ -1,0 +1,51 @@
+<div class="bo-modal-header">
+  <h4>Category Image</h4>
+  <button type="button" class="btn-close-modal" (click)="bsModalRef.hide()">
+    <i class="fa-solid fa-close"></i>
+  </button>
+</div>
+
+<div class="bo-modal-body">
+  <p class="text-muted mb-3">
+    Shown instead of found-item photos for the <strong>{{ category.name }}</strong>
+    category. Found-report photos stay private to the finder.
+  </p>
+
+  <div class="d-flex justify-content-center mb-3">
+    @if (previewUrl() || category.imageUrl) {
+      <img
+        [src]="previewUrl() || category.imageUrl"
+        alt="Category image"
+        style="max-height: 180px; max-width: 100%; object-fit: contain"
+        class="rounded border"
+      />
+    } @else {
+      <div
+        class="d-flex align-items-center justify-content-center rounded border text-muted"
+        style="height: 180px; width: 180px"
+      >
+        <i class="fa-solid fa-image fa-2x"></i>
+      </div>
+    }
+  </div>
+
+  <div class="form-control-wrapper">
+    <label for="categoryImage">Choose image</label>
+    <input
+      type="file"
+      class="form-control"
+      id="categoryImage"
+      accept="image/*"
+      [disabled]="uploading()"
+      (change)="onFileSelected($event)"
+    />
+  </div>
+</div>
+
+<app-confirm-buttons
+  [saveButtonDisabled]="!selectedFile || uploading()"
+  [cancelButtonDisabled]="uploading()"
+  [saveButtonText]="uploading() ? 'Uploading...' : 'Save'"
+  (editButtonsSave)="submit()"
+  (editButtonsCancel)="bsModalRef.hide()">
+</app-confirm-buttons>
