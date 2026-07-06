@@ -1,35 +1,130 @@
 <ul class="nav nav-tabs mb-3">
   <li class="nav-item">
-    <button class="nav-link active">Report Categories</button>
+    <button
+      class="nav-link"
+      [class.active]="activeTab() === 'categories'"
+      (click)="selectTab('categories')"
+    >
+      Report Categories
+    </button>
+  </li>
+  <li class="nav-item">
+    <button
+      class="nav-link"
+      [class.active]="activeTab() === 'templates'"
+      (click)="selectTab('templates')"
+    >
+      Question Templates
+    </button>
   </li>
 </ul>
 
-@if (loading()) {
-  <app-data-table-skeleton
-    [showReload]="true"
-    [showButton]="true"
-    [columnCount]="2"
-  />
-} @else {
-  <app-data-table
-    [data]="categories()"
-    [headingText]="'Report Categories'"
-    [buttonText]="'New Category'"
-    [emptyMessage]="'No categories found'"
-    [showReload]="true"
-    (reload)="reloadCategories()"
-  >
-    <ng-template dataTableHeaderTemplate>
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-      </tr>
-    </ng-template>
-    <ng-template dataTableRowTemplate let-row="row">
-      <tr>
-        <td>{{ row.id }}</td>
-        <td>{{ row.name }}</td>
-      </tr>
-    </ng-template>
-  </app-data-table>
+@if (activeTab() === 'categories') {
+  @if (categoriesLoading()) {
+    <app-data-table-skeleton [showReload]="true" [columnCount]="3" />
+  } @else {
+    <app-data-table
+      [data]="categories()"
+      [headingText]="'Report Categories'"
+      [emptyMessage]="'No categories found'"
+      [showReload]="true"
+      (reload)="reloadCategories()"
+    >
+      <ng-template dataTableHeaderTemplate>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Min Questions</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template dataTableRowTemplate let-row="row">
+        <tr>
+          <td>{{ row.id }}</td>
+          <td>{{ row.name }}</td>
+          <td>{{ row.minQuestions }}</td>
+          <td class="text-end">
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-primary"
+              (click)="editMinQuestions(row)"
+            >
+              <i class="fa-solid fa-pen me-1"></i> Edit
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+    </app-data-table>
+  }
+}
+
+@if (activeTab() === 'templates') {
+  <div class="mb-3" style="max-width: 320px">
+    <ng-select
+      [items]="categories()"
+      bindLabel="name"
+      bindValue="id"
+      placeholder="All categories"
+      [ngModel]="selectedCategoryId()"
+      (ngModelChange)="onCategoryFilterChange($event)"
+    >
+    </ng-select>
+  </div>
+
+  @if (templatesLoading()) {
+    <app-data-table-skeleton [showReload]="true" [showButton]="true" [columnCount]="5" />
+  } @else {
+    <app-data-table
+      [data]="templates()"
+      [headingText]="'Question Templates'"
+      [buttonText]="'New Question'"
+      [emptyMessage]="'No question templates found'"
+      [showReload]="true"
+      (reload)="reloadTemplates()"
+      (addNew)="addTemplate()"
+    >
+      <ng-template dataTableHeaderTemplate>
+        <tr>
+          <th>Prompt</th>
+          <th>Category</th>
+          <th>Type</th>
+          <th>Choices</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template dataTableRowTemplate let-row="row">
+        <tr>
+          <td>{{ row.prompt }}</td>
+          <td>{{ row.categoryName }}</td>
+          <td>{{ row.kind === QuestionKind.CHOICE ? "Multiple choice" : "Free text" }}</td>
+          <td>{{ row.kind === QuestionKind.CHOICE ? (row.defaultChoices || []).join(", ") : "—" }}</td>
+          <td>
+            @if (row.isActive) {
+              <span class="badge bg-success-subtle text-success">Active</span>
+            } @else {
+              <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+            }
+          </td>
+          <td class="text-end">
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-primary me-2"
+              (click)="editTemplate(row)"
+            >
+              <i class="fa-solid fa-pen me-1"></i> Edit
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-danger"
+              [disabled]="!row.isActive"
+              (click)="deactivateTemplate(row)"
+            >
+              <i class="fa-solid fa-ban me-1"></i> Deactivate
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+    </app-data-table>
+  }
 }

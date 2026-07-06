@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ReportCategoryDto } from '@lost-and-found/api';
+import { ReportCategoryDto, UpdateMinQuestionsRequestDto } from '@lost-and-found/api';
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
@@ -9,5 +9,9 @@ export class ReportCategoriesApiService {
 
   getAll(): Observable<ReportCategoryDto[]> {
     return this.api.get<ReportCategoryDto[]>('report-categories');
+  }
+
+  updateMinQuestions(id: number, data: UpdateMinQuestionsRequestDto): Observable<void> {
+    return this.api.put<void>(`admin/report-categories/${id}/min-questions`, data);
   }
 }
