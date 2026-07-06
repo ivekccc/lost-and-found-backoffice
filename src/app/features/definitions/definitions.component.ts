@@ -85,9 +85,10 @@ export default class DefinitionsComponent implements OnInit {
   }
 
   editMinQuestions(category: ReportCategoryDto): void {
-    const modalRef = this.modalService.openRightModal(MinQuestionsFormComponent);
+    const modalRef = this.modalService.openRightModal(MinQuestionsFormComponent, {
+      initialState: { category },
+    });
     const form = modalRef.content as MinQuestionsFormComponent;
-    form.category = category;
 
     form.onSave.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((minQuestions) => {
       modalRef.hide();
@@ -100,9 +101,10 @@ export default class DefinitionsComponent implements OnInit {
   }
 
   addTemplate(): void {
-    const modalRef = this.modalService.openRightModal(QuestionTemplateFormComponent);
+    const modalRef = this.modalService.openRightModal(QuestionTemplateFormComponent, {
+      initialState: { categories: this.categories() },
+    });
     const form = modalRef.content as QuestionTemplateFormComponent;
-    form.categories = this.categories();
 
     form.onSave.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((created) => {
       modalRef.hide();
@@ -114,10 +116,10 @@ export default class DefinitionsComponent implements OnInit {
   }
 
   editTemplate(template: AdminQuestionTemplateDto): void {
-    const modalRef = this.modalService.openRightModal(QuestionTemplateFormComponent);
+    const modalRef = this.modalService.openRightModal(QuestionTemplateFormComponent, {
+      initialState: { categories: this.categories(), template },
+    });
     const form = modalRef.content as QuestionTemplateFormComponent;
-    form.categories = this.categories();
-    form.template = template;
 
     form.onSave.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((updated) => {
       modalRef.hide();
