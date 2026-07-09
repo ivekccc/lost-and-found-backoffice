@@ -28,4 +28,8 @@ export class UserApiService {
   getUserById(id: number): Observable<UserDetailsDto> {
     return this.api.get<UserDetailsDto>(`admin/users/${id}`);
   }
+
+  deleteUser(id: number): Observable<void> {
+    return this.api.delete<void>(`admin/users/${id}`);
+  }
 }

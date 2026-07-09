@@ -25,6 +25,16 @@
         <i class="fa-solid fa-share-nodes me-1"></i>Share
       }
     </button>
+    @if (user()!.status !== 'DELETED') {
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-danger ms-2"
+        (click)="deleteUser()"
+        [disabled]="deleting()"
+      >
+        <i class="fa-solid fa-trash me-1"></i>Delete account
+      </button>
+    }
   </div>
 
   <div class="row g-3">
@@ -61,7 +71,8 @@
               <span class="badge"
                 [class.bg-success]="user()!.status === 'ACTIVE'"
                 [class.bg-danger]="user()!.status === 'BLOCKED'"
-                [class.bg-warning]="user()!.status === 'PARTIALLY_BLOCKED'">
+                [class.bg-warning]="user()!.status === 'PARTIALLY_BLOCKED'"
+                [class.bg-dark]="user()!.status === 'DELETED'">
                 {{ user()!.status }}
               </span>
             </div>

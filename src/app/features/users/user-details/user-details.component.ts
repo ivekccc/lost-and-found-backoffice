@@ -1,15 +1,18 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   inject,
   OnInit,
   signal,
 } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { UserDetailsDto } from '@lost-and-found/api';
 import { catchError, EMPTY, tap } from 'rxjs';
 import { UserApiService } from '../../../core/api/user-api.service';
+import { ConfirmModalService } from '../../../shared/services/confirm-modal.service';
 import { DetailsSkeletonComponent } from '../../../shared/components/details-skeleton/details-skeleton.component';
 import { ErrorStateComponent } from '../../../shared/components/error-state/error-state.component';
 
@@ -27,15 +30,50 @@ import { ErrorStateComponent } from '../../../shared/components/error-state/erro
 })
 export default class UserDetailsComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private userApi = inject(UserApiService);
+  private confirmModalService = inject(ConfirmModalService);
+  private destroyRef = inject(DestroyRef);
 
   user = signal<UserDetailsDto | null>(null);
   loading = signal(true);
   error = signal(false);
   linkCopied = signal(false);
+  deleting = signal(false);
 
   ngOnInit(): void {
     this._loadUser();
+  }
+
+  deleteUser(): void {
+    const user = this.user();
+    if (!user) {
+      return;
+    }
+
+    this.confirmModalService
+      .openConfirm(
+        `Delete ${user.email}? This erases their personal data and reports, and anonymizes claims on other users' reports. This cannot be undone.`,
+        { title: 'Delete account', confirmText: 'Delete', destructive: true },
+      )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((confirmed) => {
+        if (!confirmed) {
+          return;
+        }
+        this.deleting.set(true);
+        this.userApi
+          .deleteUser(user.id)
+          .pipe(
+            tap(() => this.router.navigate(['/users'])),
+            catchError(() => {
+              this.deleting.set(false);
+              return EMPTY;
+            }),
+            takeUntilDestroyed(this.destroyRef),
+          )
+          .subscribe();
+      });
   }
 
   retryLoad(): void {
