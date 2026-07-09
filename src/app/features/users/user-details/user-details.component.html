@@ -25,6 +25,33 @@
         <i class="fa-solid fa-share-nodes me-1"></i>Share
       }
     </button>
+    @if (user()!.status === 'ACTIVE' && user()!.role !== 'ADMIN') {
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-warning ms-2"
+        (click)="partialBlockUser()"
+        [disabled]="moderating()"
+      >
+        <i class="fa-solid fa-user-lock me-1"></i>Restrict
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-danger ms-2"
+        (click)="blockUser()"
+        [disabled]="moderating()"
+      >
+        <i class="fa-solid fa-ban me-1"></i>Block
+      </button>
+    } @else if (user()!.status === 'BLOCKED' || user()!.status === 'PARTIALLY_BLOCKED') {
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-success ms-2"
+        (click)="unblockUser()"
+        [disabled]="moderating()"
+      >
+        <i class="fa-solid fa-unlock me-1"></i>Unblock
+      </button>
+    }
     @if (user()!.status !== 'DELETED') {
       <button
         type="button"

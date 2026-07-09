@@ -37,6 +37,10 @@ export const routes: Routes = [
       {
         path: 'definitions',
         loadComponent: () => import('./features/definitions/definitions.component')
+      },
+      {
+        path: 'abuse-reports',
+        loadComponent: () => import('./features/abuse-reports/abuse-reports.component')
       }
     ]
   },

@@ -1,0 +1,80 @@
+<div class="mb-3" style="max-width: 260px">
+  <ng-select
+    [items]="statusOptions"
+    bindLabel="label"
+    bindValue="value"
+    placeholder="All statuses"
+    [ngModel]="selectedStatus()"
+    (ngModelChange)="onStatusChange($event)"
+  >
+  </ng-select>
+</div>
+
+@if (loading()) {
+  <app-data-table-skeleton [showReload]="true" [columnCount]="6" />
+} @else if (error()) {
+  <app-error-state
+    title="Unable to load reports"
+    message="The moderation queue could not be loaded. The server may be unreachable."
+    retryText="Retry"
+    (retry)="reload()"
+  />
+} @else {
+  <app-data-table
+    [data]="reports()"
+    [headingText]="'Abuse Reports'"
+    [emptyMessage]="'No reports in this queue'"
+    [showReload]="true"
+    (reload)="reload()"
+  >
+    <ng-template dataTableHeaderTemplate>
+      <tr>
+        <th>Target</th>
+        <th>Reason</th>
+        <th>Reporter</th>
+        <th>Status</th>
+        <th>Reported</th>
+        <th class="text-end">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template dataTableRowTemplate let-row="row">
+      <tr>
+        <td>
+          @if (row.targetType === AbuseTargetType.USER) {
+            <a [routerLink]="['/users', row.targetUserId]">
+              <i class="fa-solid fa-user me-1"></i>{{ row.targetLabel }}
+            </a>
+          } @else {
+            <a [routerLink]="['/reports', row.targetReportId]">
+              <i class="fa-solid fa-list me-1"></i>{{ row.targetLabel }}
+            </a>
+          }
+        </td>
+        <td>{{ reasonLabel(row.reason) }}</td>
+        <td>{{ row.reporterName }}</td>
+        <td>
+          <span class="badge"
+            [class.bg-warning]="row.status === 'PENDING'"
+            [class.bg-success]="row.status === 'REVIEWED_ACTIONED'"
+            [class.bg-secondary]="row.status === 'DISMISSED'">
+            {{ statusLabel(row.status) }}
+          </span>
+        </td>
+        <td>{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+        <td class="text-end">
+          @if (row.status === 'PENDING') {
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              (click)="dismiss(row)"
+            >
+              <i class="fa-solid fa-xmark me-1"></i> Dismiss
+            </button>
+          } @else {
+            <span class="text-muted small">—</span>
+          }
+        </td>
+      </tr>
+    </ng-template>
+  </app-data-table>
+}

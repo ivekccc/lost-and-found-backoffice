@@ -10,5 +10,6 @@ export function mapReportDetailsToListItem(report: ReportDetailsDto): ReportList
     location: report.location,
     createdAt: report.createdAt,
     thumbnailUrl: report.images?.[0]?.imageUrl,
+    reported: report.reported,
   };
 }

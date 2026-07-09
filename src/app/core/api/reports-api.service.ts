@@ -29,4 +29,12 @@ export class ReportsApiService {
   createReport(data: CreateReportRequest): Observable<ReportDetailsDto> {
     return this.api.post<ReportDetailsDto>('reports', data);
   }
+
+  flagReport(id: number): Observable<void> {
+    return this.api.post<void>(`admin/reports/${id}/flag`, {});
+  }
+
+  unflagReport(id: number): Observable<void> {
+    return this.api.post<void>(`admin/reports/${id}/unflag`, {});
+  }
 }

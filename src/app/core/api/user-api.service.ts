@@ -32,4 +32,16 @@ export class UserApiService {
   deleteUser(id: number): Observable<void> {
     return this.api.delete<void>(`admin/users/${id}`);
   }
+
+  blockUser(id: number): Observable<void> {
+    return this.api.post<void>(`admin/users/${id}/block`, {});
+  }
+
+  partialBlockUser(id: number): Observable<void> {
+    return this.api.post<void>(`admin/users/${id}/partial-block`, {});
+  }
+
+  unblockUser(id: number): Observable<void> {
+    return this.api.post<void>(`admin/users/${id}/unblock`, {});
+  }
 }

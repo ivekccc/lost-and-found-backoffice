@@ -25,6 +25,25 @@
         <i class="fa-solid fa-share-nodes me-1"></i>Share
       }
     </button>
+    @if (report()!.status === 'FLAGGED') {
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-success ms-2"
+        (click)="unflagReport()"
+        [disabled]="moderating()"
+      >
+        <i class="fa-solid fa-eye me-1"></i>Unflag
+      </button>
+    } @else if (report()!.status !== 'DELETED') {
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-danger ms-2"
+        (click)="flagReport()"
+        [disabled]="moderating()"
+      >
+        <i class="fa-solid fa-flag me-1"></i>Flag
+      </button>
+    }
   </div>
 
   <div class="row g-3">
