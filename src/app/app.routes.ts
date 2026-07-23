@@ -41,6 +41,10 @@ export const routes: Routes = [
       {
         path: 'abuse-reports',
         loadComponent: () => import('./features/abuse-reports/abuse-reports.component')
+      },
+      {
+        path: 'matches',
+        loadComponent: () => import('./features/matches/matches.component')
       }
     ]
   },
