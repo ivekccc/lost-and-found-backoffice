@@ -56,7 +56,10 @@ export class CategoryImageFormComponent {
           formData.append('signature', signature.signature);
           formData.append('timestamp', String(signature.timestamp));
           formData.append('api_key', signature.apiKey);
-          formData.append('folder', signature.folder);
+          // Server generise i potpisuje publicId vezan za nalog koji trazi potpis; menjanje
+          // ove vrednosti obara potpis. Ranije se slao goli folder, pa je ime fajla biralo
+          // klijent i otpremljena slika nije imala vlasnika.
+          formData.append('public_id', signature.publicId);
           return this.cloudinaryApi.upload(signature.cloudName, formData);
         }),
         switchMap((result) => {
