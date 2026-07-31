@@ -104,19 +104,21 @@
         </div>
       }
 
-      @if (report()!.location.latitude && report()!.location.longitude) {
-        <div class="card mt-3">
-          <div class="card-body">
-            <h6 class="text-muted text-uppercase small mb-3">Location</h6>
-            <div class="mb-3">{{ report()!.location.formattedAddress || '-' }}</div>
-            <div style="height: 350px;">
-              <app-map-view
-                [latitude]="report()!.location.latitude!"
-                [longitude]="report()!.location.longitude!"
-              />
+      @if (report()!.location; as location) {
+        @if (location.latitude && location.longitude) {
+          <div class="card mt-3">
+            <div class="card-body">
+              <h6 class="text-muted text-uppercase small mb-3">Location</h6>
+              <div class="mb-3">{{ location.formattedAddress || '-' }}</div>
+              <div style="height: 350px;">
+                <app-map-view
+                  [latitude]="location.latitude"
+                  [longitude]="location.longitude"
+                />
+              </div>
             </div>
           </div>
-        </div>
+        }
       }
     </div>
 

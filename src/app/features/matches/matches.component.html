@@ -80,9 +80,9 @@
           </span>
         </td>
         <td class="text-muted small">
-          {{ row.distanceKm }} km ({{ row.distanceScore }}) ·
+          {{ row.distanceKm | number: '1.1-1' }} km ({{ row.distanceScore }}) ·
           {{ row.timeGapDays }}d ({{ row.timeScore }}) ·
-          text {{ row.textSimilarity }} ({{ row.textScore }})
+          text {{ row.textSimilarity | number: '1.2-2' }} ({{ row.textScore }})
         </td>
         <td>
           @if (dismissalLabel(row); as label) {

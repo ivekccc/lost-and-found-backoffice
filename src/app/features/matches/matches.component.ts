@@ -9,7 +9,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AdminMatchListDto, ReportMatchStatus } from '@lost-and-found/api';
 import { tap, catchError, debounceTime, switchMap, EMPTY, Subject } from 'rxjs';
@@ -32,6 +32,7 @@ const MIN_SCORE_DEBOUNCE_MS = 300;
     FormsModule,
     RouterLink,
     DatePipe,
+    DecimalPipe,
     NgSelectModule,
     DataTableComponent,
     DataTableHeaderTemplateDirective,

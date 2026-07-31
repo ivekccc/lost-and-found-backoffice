@@ -1,6 +1,6 @@
-import { ReportDetailsDto, ReportListDto } from '@lost-and-found/api';
+import { AdminReportListDto, ReportDetailsDto } from '@lost-and-found/api';
 
-export function mapReportDetailsToListItem(report: ReportDetailsDto): ReportListDto {
+export function mapReportDetailsToListItem(report: ReportDetailsDto): AdminReportListDto {
   return {
     id: report.id,
     title: report.title,
@@ -9,7 +9,7 @@ export function mapReportDetailsToListItem(report: ReportDetailsDto): ReportList
     status: report.status,
     location: report.location,
     createdAt: report.createdAt,
-    thumbnailUrl: report.images?.[0]?.imageUrl,
-    reported: report.reported,
+    ownerId: report.userId,
+    ownerName: report.userFullName,
   };
 }

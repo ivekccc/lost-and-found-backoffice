@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ReportListDto } from '@lost-and-found/api';
+import { AdminReportListDto } from '@lost-and-found/api';
 import { mapReportDetailsToListItem } from './reports.utils';
 import { tap, catchError, EMPTY } from 'rxjs';
 import { ReportsApiService } from '../../core/api/reports-api.service';
@@ -41,7 +41,7 @@ export default class ReportsComponent implements OnInit {
   private modalService = inject(ModalService);
   private destroyRef = inject(DestroyRef);
 
-  reports = signal<ReportListDto[]>([]);
+  reports = signal<AdminReportListDto[]>([]);
   loading = signal(true);
 
   ngOnInit(): void {
