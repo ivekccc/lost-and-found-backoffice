@@ -17,10 +17,13 @@ export class ReportsApiService {
 
   // Moderacija ide kroz admin/reports, ne kroz javni /reports: javni endpoint vraca
   // samo ACTIVE oglase, izbacuje sopstvene i maskira lokaciju na nivo zone.
-  getReports(type?: ReportType, status?: ReportStatus): Observable<AdminReportListDto[]> {
+  getReports(type?: ReportType, status?: ReportStatus, cityId?: number): Observable<AdminReportListDto[]> {
     let params = new HttpParams();
     if (type) {
       params = params.append('type', type);
+    }
+    if (cityId) {
+      params = params.append('cityId', cityId);
     }
     if (status) {
       params = params.append('status', status);

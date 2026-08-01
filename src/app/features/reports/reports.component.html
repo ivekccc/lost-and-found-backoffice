@@ -1,8 +1,22 @@
+<div class="d-flex flex-wrap gap-3 mb-3 align-items-end">
+  <div style="width: 260px">
+    <ng-select
+      [items]="cities()"
+      bindLabel="name"
+      bindValue="id"
+      placeholder="All cities"
+      [ngModel]="selectedCityId()"
+      (ngModelChange)="onCityChange($event)"
+    >
+    </ng-select>
+  </div>
+</div>
+
 @if (loading()) {
   <app-data-table-skeleton
     [showReload]="true"
     [showButton]="true"
-    [columnCount]="6"
+    [columnCount]="7"
   />
 } @else {
   <app-data-table
@@ -20,6 +34,7 @@
         <th>Type</th>
         <th>Category</th>
         <th>Status</th>
+        <th>City</th>
         <th>Location</th>
         <th>Created</th>
       </tr>
@@ -36,6 +51,7 @@
         <td>
           <span class="badge bg-secondary">{{ row.status }}</span>
         </td>
+        <td>{{ row.cityName || '-' }}</td>
         <td>{{ row.location?.formattedAddress || '-' }}</td>
         <td>{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
       </tr>

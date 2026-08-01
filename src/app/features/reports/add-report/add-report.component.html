@@ -55,6 +55,24 @@
     </div>
 
     <div class="form-control-wrapper">
+      <label for="location">Location</label>
+      <ng-select
+        formControlName="location"
+        [items]="(locationSuggestions$ | async) ?? []"
+        [typeahead]="locationSearch$"
+        [minTermLength]="2"
+        bindLabel="displayName"
+        placeholder="Search address"
+        typeToSearchText="Type at least 2 characters"
+        notFoundText="No locations found"
+        labelForId="location">
+      </ng-select>
+      @if (reportForm.controls.location.touched && reportForm.controls.location.invalid) {
+        <span class="error-text">Location is required</span>
+      }
+    </div>
+
+    <div class="form-control-wrapper">
       <label for="description">Description</label>
       <textarea
         class="form-control"
