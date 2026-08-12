@@ -52,10 +52,10 @@
       </tr>
     </ng-template>
     <ng-template dataTableRowTemplate let-row="row">
-      <tr>
+      <tr class="match-row" (click)="openDetails(row)">
         <td>{{ row.id }}</td>
         <td>
-          <a [routerLink]="['/reports', row.lostReportId]">
+          <a [routerLink]="['/reports', row.lostReportId]" (click)="$event.stopPropagation()">
             <i class="fa-solid fa-list me-1"></i>{{ row.lostReportTitle }}
           </a>
           @if (row.lostReportStatus !== 'ACTIVE') {
@@ -63,7 +63,7 @@
           }
         </td>
         <td>
-          <a [routerLink]="['/reports', row.foundReportId]">
+          <a [routerLink]="['/reports', row.foundReportId]" (click)="$event.stopPropagation()">
             <i class="fa-solid fa-list me-1"></i>{{ row.foundReportTitle }}
           </a>
           @if (row.foundReportStatus !== 'ACTIVE') {

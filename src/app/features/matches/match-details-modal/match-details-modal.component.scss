@@ -1,0 +1,122 @@
+.section-title {
+  font-size: var(--app-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6c757d;
+  margin-bottom: 0.75rem;
+}
+
+.pair {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--app-border-color);
+  border-radius: 8px;
+
+  .pair-side {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .pair-label {
+    font-size: var(--app-font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6c757d;
+  }
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  .filter {
+    font-size: var(--app-font-size-sm);
+    padding: 0.25rem 0.6rem;
+    border: 1px solid var(--app-border-color);
+    border-radius: 999px;
+
+    i {
+      color: #198754;
+      margin-right: 0.35rem;
+    }
+  }
+}
+
+.calc {
+  width: 100%;
+
+  th,
+  td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--app-border-color);
+    vertical-align: middle;
+  }
+
+  th {
+    width: 6.5rem;
+    font-weight: 600;
+  }
+
+  .formula {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: var(--app-font-size-sm);
+    color: #495057;
+  }
+
+  .points {
+    width: 4rem;
+    text-align: right;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .total {
+    th,
+    td {
+      border-bottom: none;
+      border-top: 2px solid var(--app-border-color);
+      font-size: 1.05rem;
+    }
+  }
+}
+
+.verdict {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  font-size: var(--app-font-size-sm);
+
+  &.verdict-pass {
+    background: #d1e7dd;
+    color: #0f5132;
+  }
+
+  &.verdict-fail {
+    background: #f8d7da;
+    color: #842029;
+  }
+}
+
+.inputs {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 1.5rem;
+  margin-bottom: 0;
+
+  dt {
+    font-weight: 400;
+    color: #6c757d;
+    font-size: var(--app-font-size-sm);
+  }
+
+  dd {
+    margin-bottom: 0;
+    font-variant-numeric: tabular-nums;
+  }
+}

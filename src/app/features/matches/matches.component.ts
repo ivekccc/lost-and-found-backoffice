@@ -14,6 +14,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { AdminMatchListDto, ReportMatchStatus } from '@lost-and-found/api';
 import { tap, catchError, debounceTime, switchMap, EMPTY, Subject } from 'rxjs';
 import { MatchesApiService } from '../../core/api/matches-api.service';
+import { ModalService } from '../../shared/services/modal/modal.service';
+import { MatchDetailsModalComponent } from './match-details-modal/match-details-modal.component';
 import {
   DataTableComponent,
   DataTableHeaderTemplateDirective,
@@ -45,6 +47,7 @@ const MIN_SCORE_DEBOUNCE_MS = 300;
 })
 export default class MatchesComponent implements OnInit {
   private matchesApi = inject(MatchesApiService);
+  private modalService = inject(ModalService);
   private destroyRef = inject(DestroyRef);
 
   private loadTrigger = new Subject<void>();
@@ -53,6 +56,7 @@ export default class MatchesComponent implements OnInit {
   matches = signal<AdminMatchListDto[]>([]);
   loading = signal(true);
   error = signal(false);
+  detailsLoading = signal(false);
   selectedStatus = signal<ReportMatchStatus | null>(null);
   minScore = signal<number | null>(null);
   page = signal(0);
@@ -137,6 +141,32 @@ export default class MatchesComponent implements OnInit {
       this.page.update((page) => page + 1);
       this.loadTrigger.next();
     }
+  }
+
+  openDetails(match: AdminMatchListDto): void {
+    // Guard, not just cosmetics: double-clicking a row would otherwise fire two requests and
+    // stack two modals on top of each other.
+    if (this.detailsLoading()) {
+      return;
+    }
+    this.detailsLoading.set(true);
+
+    this.matchesApi
+      .getMatch(match.id)
+      .pipe(
+        tap((details) => {
+          this.detailsLoading.set(false);
+          this.modalService.openCentralModal(MatchDetailsModalComponent, {
+            initialState: { data: details },
+          });
+        }),
+        catchError(() => {
+          this.detailsLoading.set(false);
+          return EMPTY;
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
   }
 
   dismissalLabel(match: AdminMatchListDto): string | null {

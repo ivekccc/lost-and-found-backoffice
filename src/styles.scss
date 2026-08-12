@@ -87,6 +87,21 @@ $modal-padding: 32px;
     }
   }
 
+  // Centrirani dijalog. Ne nasledjuje .bo-modal jer je ta geometrija bocna ploca preko cele
+  // visine; ovde visinu diktira sadrzaj, uz gornju granicu da duga racunica moze da se skroluje.
+  .bo-modal-center {
+    width: $modal-width-lg !important;
+    max-width: calc(100vw - 2rem) !important;
+
+    .modal-content {
+      padding: $modal-padding;
+      border: none;
+      border-radius: 12px;
+      max-height: calc(100vh - 4rem);
+      overflow-y: auto;
+    }
+  }
+
   &.fade {
     .bo-modal-left {
       transition: transform 0.3s ease-out !important;

@@ -34,6 +34,19 @@ export class ModalService {
     return this.bsModalService.show(content, largeLeftModalConfig);
   }
 
+  /**
+   * Centred dialog, not a side sheet — deliberately does not carry the `bo-modal` class, whose
+   * full-height fixed-width geometry is what makes the left/right panels slide in from the edge.
+   */
+  openCentralModal<T>(content: Type<T> | TemplateRef<any>, config?: Partial<ModalOptions<T>>): BsModalRef<T> {
+    const centralModalConfig: ModalOptions<T> = {
+      ...config,
+      class: `bo-modal-center modal-dialog-centered ${config?.class || ''}`.trim(),
+    } as ModalOptions<T>;
+
+    return this.bsModalService.show(content, centralModalConfig);
+  }
+
   openLargeRightModal<T>(content: Type<T> | TemplateRef<any>, config?: Partial<ModalOptions<T>>): BsModalRef<T> {
     const largeRightModalConfig: ModalOptions<T> = {
       ...config,

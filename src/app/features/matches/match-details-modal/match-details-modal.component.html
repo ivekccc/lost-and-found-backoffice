@@ -1,0 +1,127 @@
+<div class="bo-modal-header">
+  <div>
+    <h4>How this match scored</h4>
+    <div class="text-muted small">
+      Match #{{ data.id }} · computed {{ data.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+    </div>
+  </div>
+  <button type="button" class="btn-close-modal" (click)="close()">
+    <i class="fa-solid fa-xmark"></i>
+  </button>
+</div>
+
+<div class="bo-modal-body">
+  <div class="pair mb-4">
+    <div class="pair-side">
+      <div class="pair-label">Lost</div>
+      <a [routerLink]="['/reports', data.lostReportId]" (click)="close()">
+        {{ data.lostReportTitle }}
+      </a>
+      @if (data.lostReportStatus !== 'ACTIVE') {
+        <span class="badge bg-secondary ms-1">{{ data.lostReportStatus }}</span>
+      }
+    </div>
+    <i class="fa-solid fa-arrows-left-right text-muted"></i>
+    <div class="pair-side text-end">
+      <div class="pair-label">Found</div>
+      <a [routerLink]="['/reports', data.foundReportId]" (click)="close()">
+        {{ data.foundReportTitle }}
+      </a>
+      @if (data.foundReportStatus !== 'ACTIVE') {
+        <span class="badge bg-secondary ms-1">{{ data.foundReportStatus }}</span>
+      }
+    </div>
+  </div>
+
+  <h6 class="section-title">Candidate filters passed</h6>
+  <div class="filters mb-4">
+    <span class="filter"><i class="fa-solid fa-check"></i> Opposite types</span>
+    <span class="filter"><i class="fa-solid fa-check"></i> Same category — {{ data.categoryName }}</span>
+    <span class="filter"><i class="fa-solid fa-check"></i> Different owners</span>
+    <span class="filter">
+      <i class="fa-solid fa-check"></i>
+      Within {{ data.config.maxDistanceKm | number: '1.0-2' }} km
+    </span>
+  </div>
+
+  <h6 class="section-title">Score components</h6>
+  <table class="calc mb-3">
+    <tbody>
+      <tr>
+        <th>Proximity</th>
+        <td class="formula">
+          {{ data.config.weightDistance }} &middot; (1 &minus;
+          {{ cappedDistanceKm | number: '1.2-2' }} / {{ data.config.maxDistanceKm | number: '1.0-2' }})
+          = {{ data.config.weightDistance }} &middot; {{ distanceFactor | number: '1.4-4' }}
+        </td>
+        <td class="points">{{ data.distanceScore }}</td>
+      </tr>
+      <tr>
+        <th>Text</th>
+        <td class="formula">
+          {{ data.config.weightText }} &middot; {{ data.textSimilarity | number: '1.3-3' }}
+        </td>
+        <td class="points">{{ data.textScore }}</td>
+      </tr>
+      <tr>
+        <th>Time</th>
+        <td class="formula">
+          {{ data.config.weightTime }} &middot; max(0, 1 &minus;
+          {{ data.timeGapDays }} / {{ data.config.timeDecayDays }})
+          = {{ data.config.weightTime }} &middot; {{ timeFactor | number: '1.4-4' }}
+        </td>
+        <td class="points">{{ data.timeScore }}</td>
+      </tr>
+      <tr class="total">
+        <th>Total</th>
+        <td class="formula">
+          {{ data.distanceScore }} + {{ data.textScore }} + {{ data.timeScore }}
+        </td>
+        <td class="points">{{ data.score }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div
+    class="verdict mb-4"
+    [class.verdict-pass]="meetsThreshold"
+    [class.verdict-fail]="!meetsThreshold"
+  >
+    <i class="fa-solid" [class.fa-circle-check]="meetsThreshold" [class.fa-circle-xmark]="!meetsThreshold"></i>
+    {{ data.score }} {{ meetsThreshold ? '≥' : '<' }} {{ data.config.scoreThreshold }} —
+    {{ meetsThreshold ? 'suggested to both sides' : 'below the suggestion threshold' }}
+  </div>
+
+  <h6 class="section-title">Raw inputs</h6>
+  <dl class="inputs mb-4">
+    <dt>Distance between locations</dt>
+    <dd>{{ data.distanceKm | number: '1.2-2' }} km</dd>
+    <dt>Text similarity (trigram)</dt>
+    <dd>{{ data.textSimilarity | number: '1.3-3' }}</dd>
+    <dt>Reported apart</dt>
+    <dd>{{ data.timeGapDays }} {{ data.timeGapDays === 1 ? 'day' : 'days' }}</dd>
+  </dl>
+
+  <h6 class="section-title">State</h6>
+  <dl class="inputs">
+    <dt>Status</dt>
+    <dd>{{ data.status }}</dd>
+    <dt>Notified</dt>
+    <dd>{{ data.notifiedAt ? (data.notifiedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}</dd>
+    <dt>Dismissed by lost side</dt>
+    <dd>{{ data.lostDismissedAt ? (data.lostDismissedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}</dd>
+    <dt>Dismissed by found side</dt>
+    <dd>{{ data.foundDismissedAt ? (data.foundDismissedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}</dd>
+    <dt>Last recomputed</dt>
+    <dd>{{ data.updatedAt | date: 'dd.MM.yyyy HH:mm' }}</dd>
+  </dl>
+
+  <p class="text-muted small mb-0 mt-4">
+    Weights and thresholds are the ones recorded when this match was scored, not the values
+    currently configured.
+  </p>
+</div>
+
+<div class="bo-modal-footer">
+  <button type="button" class="btn btn-outline-secondary" (click)="close()">Close</button>
+</div>

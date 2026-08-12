@@ -1,7 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PageAdminMatchListDto, ReportMatchStatus } from '@lost-and-found/api';
+import {
+  AdminMatchDetailsDto,
+  PageAdminMatchListDto,
+  ReportMatchStatus,
+} from '@lost-and-found/api';
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
@@ -24,5 +28,9 @@ export class MatchesApiService {
       params = params.append('minScore', options.minScore);
     }
     return this.api.get<PageAdminMatchListDto>('admin/matches', params);
+  }
+
+  getMatch(id: number): Observable<AdminMatchDetailsDto> {
+    return this.api.get<AdminMatchDetailsDto>(`admin/matches/${id}`);
   }
 }
