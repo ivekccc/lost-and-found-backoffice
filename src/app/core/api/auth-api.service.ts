@@ -1,6 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { AuthRequestDto, AuthResponseDto, RefreshTokenRequestDto, RefreshTokenResponseDto } from '@lost-and-found/api';
+import {
+  AuthRequestDto,
+  AuthResponseDto,
+  LogoutRequestDto,
+  RefreshTokenRequestDto,
+  RefreshTokenResponseDto,
+} from '@lost-and-found/api';
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
@@ -13,5 +19,9 @@ export class AuthApiService {
 
   refresh(data: RefreshTokenRequestDto): Observable<RefreshTokenResponseDto> {
     return this.api.post<RefreshTokenResponseDto>('auth/refresh', data);
+  }
+
+  logout(data: LogoutRequestDto): Observable<void> {
+    return this.api.post<void>('auth/logout', data);
   }
 }

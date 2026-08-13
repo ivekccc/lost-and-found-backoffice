@@ -1,8 +1,8 @@
 import { Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject, Observable, of, throwError } from 'rxjs';
-import { tap, switchMap, filter, take } from 'rxjs/operators';
-import { AuthRequestDto } from '@lost-and-found/api';
+import { Subject, Observable, of, throwError, EMPTY } from 'rxjs';
+import { tap, switchMap, filter, take, catchError } from 'rxjs/operators';
+import { AuthRequestDto, UserRole } from '@lost-and-found/api';
 import { AuthApiService } from '../api/auth-api.service';
 import { UserApiService } from '../api/user-api.service';
 import { AppStore } from '../../app.store';
@@ -29,10 +29,10 @@ export class AuthService {
   login(data: AuthRequestDto) {
     return this.authApi.login(data).pipe(
       tap((response) => {
-        if (response.role !== 'ADMIN') {
+        if (response.role !== UserRole.ADMIN) {
           throw new Error('Access denied. Admin role required.');
         }
-        this.setTokens(response.token, response.refreshToken, response.role);
+        this.setTokens(response.accessToken, response.refreshToken, response.role);
       }),
       switchMap(() => this.userApi.getProfile()),
       tap((user) => this.appStore.setState({ user })),
@@ -69,10 +69,21 @@ export class AuthService {
   handleRefreshFailure() {
     this.isRefreshing = false;
     this.refreshSubject$.next('');
-    this.logout();
+    this.clearSession();
   }
 
   logout() {
+    const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    if (refreshToken) {
+      this.authApi
+        .logout({ refreshToken })
+        .pipe(catchError(() => EMPTY))
+        .subscribe();
+    }
+    this.clearSession();
+  }
+
+  private clearSession() {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.ROLE_KEY);
