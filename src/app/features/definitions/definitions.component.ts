@@ -28,8 +28,9 @@ import { DataTableSkeletonComponent } from '../../shared/components/data-table-s
 import { MinQuestionsFormComponent } from './min-questions-form/min-questions-form.component';
 import { QuestionTemplateFormComponent } from './question-template-form/question-template-form.component';
 import { CategoryImageFormComponent } from './category-image-form/category-image-form.component';
+import { MatchingConfigFormComponent } from './matching-config-form/matching-config-form.component';
 
-type DefinitionsTab = 'categories' | 'templates';
+type DefinitionsTab = 'categories' | 'templates' | 'matching';
 
 @Component({
   selector: 'app-definitions',
@@ -41,6 +42,7 @@ type DefinitionsTab = 'categories' | 'templates';
     DataTableHeaderTemplateDirective,
     DataTableRowTemplateDirective,
     DataTableSkeletonComponent,
+    MatchingConfigFormComponent,
   ],
   templateUrl: './definitions.component.html',
   styleUrl: './definitions.component.scss',

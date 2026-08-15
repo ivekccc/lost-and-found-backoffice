@@ -1,0 +1,159 @@
+@if (loading()) {
+  <app-details-skeleton />
+} @else if (error()) {
+  <app-error-state (retry)="load()" />
+} @else {
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="mb-1">Scoring weights</h5>
+        <p class="text-muted small mb-3">
+          How much each signal contributes to a match score. These three must add up to
+          exactly 100, which is what makes the stored score readable as a percentage.
+        </p>
+
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="form-control-wrapper">
+              <label for="weightDistance">Distance weight</label>
+              <input
+                type="number"
+                class="form-control"
+                id="weightDistance"
+                formControlName="weightDistance"
+                min="0"
+                max="100"
+                [ngClass]="{ 'is-invalid': form.controls.weightDistance.touched && form.controls.weightDistance.invalid }"
+              />
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-control-wrapper">
+              <label for="weightText">Text weight</label>
+              <input
+                type="number"
+                class="form-control"
+                id="weightText"
+                formControlName="weightText"
+                min="0"
+                max="100"
+                [ngClass]="{ 'is-invalid': form.controls.weightText.touched && form.controls.weightText.invalid }"
+              />
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-control-wrapper">
+              <label for="weightTime">Time weight</label>
+              <input
+                type="number"
+                class="form-control"
+                id="weightTime"
+                formControlName="weightTime"
+                min="0"
+                max="100"
+                [ngClass]="{ 'is-invalid': form.controls.weightTime.touched && form.controls.weightTime.invalid }"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="alert mt-3 mb-0 py-2"
+          [class.alert-success]="weightsSum() === 100"
+          [class.alert-danger]="weightsSum() !== 100"
+        >
+          Distance {{ form.controls.weightDistance.value ?? 0 }} + Text
+          {{ form.controls.weightText.value ?? 0 }} + Time
+          {{ form.controls.weightTime.value ?? 0 }} =
+          <strong>{{ weightsSum() }}</strong>
+          @if (weightsSum() === 100) {
+            <i class="fa-solid fa-check ms-1"></i>
+          } @else if (weightsDifference() > 0) {
+            — must be exactly 100, {{ weightsDifference() }} too many
+          } @else {
+            — must be exactly 100, {{ -weightsDifference() }} short
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="mb-1">Cut-offs</h5>
+        <p class="text-muted small mb-3">
+          These are not weights and do not count towards the 100.
+        </p>
+
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="form-control-wrapper">
+              <label for="maxDistanceKm">Max distance (km)</label>
+              <input
+                type="number"
+                class="form-control"
+                id="maxDistanceKm"
+                formControlName="maxDistanceKm"
+                min="0.1"
+                step="0.5"
+                [ngClass]="{ 'is-invalid': form.controls.maxDistanceKm.touched && form.controls.maxDistanceKm.invalid }"
+              />
+              <span class="text-muted small">Candidates further apart are dropped before scoring</span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-control-wrapper">
+              <label for="timeDecayDays">Time decay (days)</label>
+              <input
+                type="number"
+                class="form-control"
+                id="timeDecayDays"
+                formControlName="timeDecayDays"
+                min="1"
+                [ngClass]="{ 'is-invalid': form.controls.timeDecayDays.touched && form.controls.timeDecayDays.invalid }"
+              />
+              <span class="text-muted small">After this many days the time signal contributes nothing</span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-control-wrapper">
+              <label for="scoreThreshold">Score threshold</label>
+              <input
+                type="number"
+                class="form-control"
+                id="scoreThreshold"
+                formControlName="scoreThreshold"
+                min="0"
+                max="100"
+                [ngClass]="{ 'is-invalid': form.controls.scoreThreshold.touched && form.controls.scoreThreshold.invalid }"
+              />
+              <span class="text-muted small">Minimum total score for a pair to be suggested</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-3">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="saving() || form.invalid || weightsSum() !== 100"
+      >
+        @if (saving()) {
+          <span class="spinner-border spinner-border-sm me-2"></span>
+        }
+        Save
+      </button>
+
+      @if (updatedAt()) {
+        <span class="text-muted small">Last changed {{ updatedAt() | date: 'dd.MM.yyyy. HH:mm' }}</span>
+      }
+    </div>
+
+    <p class="text-muted small mt-3 mb-0">
+      Saved values apply to matches computed from now on. Matches that already exist keep the
+      parameters they were scored with, so their breakdown stays reproducible — they are not
+      recalculated.
+    </p>
+  </form>
+}

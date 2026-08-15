@@ -17,6 +17,15 @@
       Question Templates
     </button>
   </li>
+  <li class="nav-item">
+    <button
+      class="nav-link"
+      [class.active]="activeTab() === 'matching'"
+      (click)="selectTab('matching')"
+    >
+      Matching
+    </button>
+  </li>
 </ul>
 
 @if (activeTab() === 'categories') {
@@ -147,4 +156,8 @@
       </ng-template>
     </app-data-table>
   }
+}
+
+@if (activeTab() === 'matching') {
+  <app-matching-config-form />
 }
