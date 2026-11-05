@@ -20,6 +20,11 @@ import {
 import { QuestionTemplatesApiService } from '../../../core/api/question-templates-api.service';
 import { ConfirmButtonsComponent } from '../../../shared/components/confirm-buttons/confirm-buttons.component';
 
+type ChoiceGroup = FormGroup<{
+  en: FormControl<string | null>;
+  sr: FormControl<string | null>;
+}>;
+
 @Component({
   selector: 'app-question-template-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,9 +44,10 @@ export class QuestionTemplateFormComponent implements OnInit {
   templateForm = new FormGroup({
     categoryId: new FormControl<number | null>(null, [Validators.required]),
     prompt: new FormControl('', [Validators.required, Validators.maxLength(500)]),
+    promptSr: new FormControl('', [Validators.required, Validators.maxLength(500)]),
     kind: new FormControl<QuestionKind>(QuestionKind.TEXT, [Validators.required]),
     isActive: new FormControl(true),
-    choices: new FormArray<FormControl<string | null>>([]),
+    choices: new FormArray<ChoiceGroup>([]),
   });
 
   kindOptions = [
@@ -53,7 +59,7 @@ export class QuestionTemplateFormComponent implements OnInit {
 
   constructor(public bsModalRef: BsModalRef) {}
 
-  get choices(): FormArray<FormControl<string | null>> {
+  get choices(): FormArray<ChoiceGroup> {
     return this.templateForm.controls.choices;
   }
 
@@ -67,9 +73,13 @@ export class QuestionTemplateFormComponent implements OnInit {
       this.templateForm.controls.categoryId.setValue(this.template.categoryId);
       this.templateForm.controls.categoryId.disable();
       this.templateForm.controls.prompt.setValue(this.template.prompt);
+      this.templateForm.controls.promptSr.setValue(this.template.promptSr);
       this.templateForm.controls.kind.setValue(this.template.kind);
       this.templateForm.controls.isActive.setValue(this.template.isActive);
-      (this.template.defaultChoices ?? []).forEach((choice) => this.addChoice(choice));
+      const choicesSr = this.template.defaultChoicesSr ?? [];
+      (this.template.defaultChoices ?? []).forEach((choice, index) =>
+        this.addChoice(choice, choicesSr[index] ?? ''),
+      );
     }
     if (this.isChoice && this.choices.length === 0) {
       this.addChoice();
@@ -87,8 +97,13 @@ export class QuestionTemplateFormComponent implements OnInit {
     }
   }
 
-  addChoice(value = ''): void {
-    this.choices.push(new FormControl(value, [Validators.required, Validators.maxLength(100)]));
+  addChoice(english = '', serbian = ''): void {
+    this.choices.push(
+      new FormGroup({
+        en: new FormControl(english, [Validators.required, Validators.maxLength(100)]),
+        sr: new FormControl(serbian, [Validators.required, Validators.maxLength(100)]),
+      }),
+    );
   }
 
   removeChoice(index: number): void {
@@ -108,14 +123,19 @@ export class QuestionTemplateFormComponent implements OnInit {
     this.templateForm.disable();
 
     const defaultChoices = this.isChoice
-      ? this.choices.controls.map((control) => control.value!.trim())
+      ? this.choices.controls.map((group) => group.controls.en.value!.trim())
+      : undefined;
+    const defaultChoicesSr = this.isChoice
+      ? this.choices.controls.map((group) => group.controls.sr.value!.trim())
       : undefined;
 
     if (this.isEdit() && this.template) {
       const request: UpdateQuestionTemplateRequestDto = {
         prompt: this.templateForm.controls.prompt.value!,
+        promptSr: this.templateForm.controls.promptSr.value!,
         kind: this.templateForm.controls.kind.value!,
         defaultChoices,
+        defaultChoicesSr,
         isActive: this.templateForm.controls.isActive.value!,
       };
       this.templatesApi
@@ -135,8 +155,10 @@ export class QuestionTemplateFormComponent implements OnInit {
     const request: CreateQuestionTemplateRequestDto = {
       categoryId: this.templateForm.controls.categoryId.value!,
       prompt: this.templateForm.controls.prompt.value!,
+      promptSr: this.templateForm.controls.promptSr.value!,
       kind: this.templateForm.controls.kind.value!,
       defaultChoices,
+      defaultChoicesSr,
     };
     this.templatesApi
       .create(request)

@@ -24,7 +24,7 @@
     </div>
 
     <div class="form-control-wrapper">
-      <label for="prompt">Prompt</label>
+      <label for="prompt">Prompt (English)</label>
       <textarea
         class="form-control"
         id="prompt"
@@ -35,6 +35,21 @@
       ></textarea>
       @if (templateForm.controls.prompt.touched && templateForm.controls.prompt.invalid) {
         <span class="error-text">Prompt is required (max 500 characters)</span>
+      }
+    </div>
+
+    <div class="form-control-wrapper">
+      <label for="promptSr">Prompt (Serbian)</label>
+      <textarea
+        class="form-control"
+        id="promptSr"
+        formControlName="promptSr"
+        rows="2"
+        placeholder="npr. Šta je ugravirano na poleđini?"
+        [ngClass]="{ 'is-invalid': templateForm.controls.promptSr.touched && templateForm.controls.promptSr.invalid }"
+      ></textarea>
+      @if (templateForm.controls.promptSr.touched && templateForm.controls.promptSr.invalid) {
+        <span class="error-text">Serbian prompt is required (max 500 characters)</span>
       }
     </div>
 
@@ -54,16 +69,23 @@
 
     @if (isChoice) {
       <div class="form-control-wrapper">
-        <label>Choices</label>
+        <label>Choices (English / Serbian)</label>
         <div formArrayName="choices" class="d-flex flex-column gap-2">
           @for (choice of choices.controls; track $index) {
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2" [formGroupName]="$index">
               <input
                 type="text"
                 class="form-control"
-                [formControlName]="$index"
+                formControlName="en"
                 placeholder="Choice {{ $index + 1 }}"
-                [ngClass]="{ 'is-invalid': choice.touched && choice.invalid }"
+                [ngClass]="{ 'is-invalid': choice.controls.en.touched && choice.controls.en.invalid }"
+              />
+              <input
+                type="text"
+                class="form-control"
+                formControlName="sr"
+                placeholder="Izbor {{ $index + 1 }}"
+                [ngClass]="{ 'is-invalid': choice.controls.sr.touched && choice.controls.sr.invalid }"
               />
               <button
                 type="button"

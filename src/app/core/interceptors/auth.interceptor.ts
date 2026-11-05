@@ -4,12 +4,14 @@ import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { environment } from '../../../environments/environment';
 
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
+export const authInterceptor: HttpInterceptorFn = (incoming, next) => {
   const authService = inject(AuthService);
 
-  if (!req.url.startsWith(environment.apiUrl)) {
-    return next(req);
+  if (!incoming.url.startsWith(environment.apiUrl)) {
+    return next(incoming);
   }
+
+  const req = incoming.clone({ setHeaders: { 'Accept-Language': 'en' } });
 
   if (
     req.url.includes('/auth/login') ||
