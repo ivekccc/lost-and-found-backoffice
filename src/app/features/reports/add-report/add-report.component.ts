@@ -87,8 +87,8 @@ export class AddReportComponent implements OnInit {
       type: this.reportForm.controls.type.value as ReportType,
       categoryId: this.reportForm.controls.categoryId.value!,
       location: {
-        osmId: selectedLocation.osmId,
-        osmType: selectedLocation.osmType,
+        latitude: selectedLocation.latitude,
+        longitude: selectedLocation.longitude,
       },
     };
 
