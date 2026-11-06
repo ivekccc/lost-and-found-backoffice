@@ -18,6 +18,9 @@ import {
 } from '@lost-and-found/api';
 import { tap, catchError, EMPTY } from 'rxjs';
 import { AbuseReportsApiService } from '../../core/api/abuse-reports-api.service';
+import { ConversationsApiService } from '../../core/api/conversations-api.service';
+import { ModalService } from '../../shared/services/modal/modal.service';
+import { ConversationModalComponent } from './conversation-modal/conversation-modal.component';
 import { ConfirmModalService } from '../../shared/services/confirm-modal.service';
 import {
   DataTableComponent,
@@ -62,11 +65,14 @@ const STATUS_LABELS: Record<string, string> = {
 export default class AbuseReportsComponent implements OnInit {
   private abuseReportsApi = inject(AbuseReportsApiService);
   private confirmModalService = inject(ConfirmModalService);
+  private conversationsApi = inject(ConversationsApiService);
+  private modalService = inject(ModalService);
   private destroyRef = inject(DestroyRef);
 
   reports = signal<AbuseReportDto[]>([]);
   loading = signal(true);
   error = signal(false);
+  conversationLoading = signal(false);
   selectedStatus = signal<AbuseReportStatus | null>(AbuseReportStatus.PENDING);
 
   AbuseTargetType = AbuseTargetType;
@@ -135,6 +141,29 @@ export default class AbuseReportsComponent implements OnInit {
         catchError(() => {
           this.error.set(true);
           this.loading.set(false);
+          return EMPTY;
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
+  }
+
+  openConversation(report: AbuseReportDto): void {
+    if (this.conversationLoading() || report.targetConversationId == null) {
+      return;
+    }
+    this.conversationLoading.set(true);
+    this.conversationsApi
+      .getConversation(report.targetConversationId)
+      .pipe(
+        tap((conversation) => {
+          this.conversationLoading.set(false);
+          this.modalService.openCentralModal(ConversationModalComponent, {
+            initialState: { data: conversation, highlightedMessageId: report.targetMessageId },
+          });
+        }),
+        catchError(() => {
+          this.conversationLoading.set(false);
           return EMPTY;
         }),
         takeUntilDestroyed(this.destroyRef),

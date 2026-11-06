@@ -44,6 +44,15 @@
             <a [routerLink]="['/users', row.targetUserId]">
               <i class="fa-solid fa-user me-1"></i>{{ row.targetLabel }}
             </a>
+          } @else if (row.targetType === AbuseTargetType.MESSAGE) {
+            <button
+              type="button"
+              class="btn btn-link p-0 text-start message-link"
+              [disabled]="conversationLoading() || row.targetConversationId == null"
+              (click)="openConversation(row)"
+            >
+              <i class="fa-solid fa-comment me-1"></i>{{ row.targetLabel }}
+            </button>
           } @else {
             <a [routerLink]="['/reports', row.targetReportId]">
               <i class="fa-solid fa-list me-1"></i>{{ row.targetLabel }}

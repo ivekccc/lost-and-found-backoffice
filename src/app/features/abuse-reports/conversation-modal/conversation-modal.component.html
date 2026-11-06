@@ -1,0 +1,60 @@
+<div class="bo-modal-header">
+  <div>
+    <h4>Conversation</h4>
+    <div class="text-muted small">
+      <a [routerLink]="['/reports', data.reportId]" (click)="close()">{{ data.reportTitle }}</a>
+    </div>
+  </div>
+  <button type="button" class="btn-close-modal" (click)="close()">
+    <i class="fa-solid fa-xmark"></i>
+  </button>
+</div>
+
+<div class="bo-modal-body">
+  <div class="participants mb-3">
+    <div>
+      <div class="participant-label">Finder</div>
+      <a [routerLink]="['/users', data.holderId]" (click)="close()">{{ data.holderName }}</a>
+    </div>
+    <div class="text-end">
+      <div class="participant-label">Owner</div>
+      <a [routerLink]="['/users', data.claimantId]" (click)="close()">{{ data.claimantName }}</a>
+    </div>
+  </div>
+
+  @if (data.messages.length === 0) {
+    <p class="text-muted text-center my-4">No messages yet.</p>
+  } @else {
+    <div class="messages">
+      @for (message of data.messages; track message.id) {
+        <div
+          class="message"
+          [class.from-holder]="isHolder(message)"
+          [class.highlighted]="message.id === highlightedMessageId"
+        >
+          <div class="message-meta">
+            {{ senderName(message) }} · {{ message.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+            @if (message.id === highlightedMessageId) {
+              <span class="badge bg-danger ms-1">Reported</span>
+            }
+          </div>
+          @switch (message.type) {
+            @case (MessageType.MEETING_POINT) {
+              <div><i class="fa-solid fa-location-dot me-1"></i>{{ message.placeLabel }}</div>
+            }
+            @case (MessageType.CONTACT) {
+              <div>
+                <i class="fa-solid fa-address-card me-1"></i>{{ message.contactName }}
+                @if (message.contactEmail) { · {{ message.contactEmail }} }
+                @if (message.contactPhone) { · {{ message.contactPhone }} }
+              </div>
+            }
+            @default {
+              <div class="message-body">{{ message.body }}</div>
+            }
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
