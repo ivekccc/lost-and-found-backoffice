@@ -49,6 +49,14 @@
                 @if (message.contactPhone) { · {{ message.contactPhone }} }
               </div>
             }
+            @case (MessageType.THANKS) {
+              <div>
+                <i class="fa-solid fa-heart me-1"></i>Thank-you
+                @if (message.body) {
+                  <div class="message-body">{{ message.body }}</div>
+                }
+              </div>
+            }
             @default {
               <div class="message-body">{{ message.body }}</div>
             }

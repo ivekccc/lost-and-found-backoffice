@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { AdminReportDetailsDto } from '@lost-and-found/api';
 import { tap, catchError, EMPTY, Observable } from 'rxjs';
 import { ReportsApiService } from '../../../core/api/reports-api.service';
@@ -23,6 +23,7 @@ import { ImageGalleryComponent } from '../../../shared/components/image-gallery/
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     DatePipe,
+    DecimalPipe,
     RouterLink,
     DetailsSkeletonComponent,
     ErrorStateComponent,

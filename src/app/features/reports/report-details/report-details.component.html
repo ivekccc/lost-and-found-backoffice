@@ -87,6 +87,13 @@
             </div>
           }
 
+          @if (report()!.rewardAmount != null) {
+            <div class="row mb-2">
+              <div class="col-4 text-muted">Reward</div>
+              <div class="col-8">{{ report()!.rewardAmount | number: '1.0-0' }} RSD</div>
+            </div>
+          }
+
           @if (report()!.description) {
             <hr />
             <h6 class="text-muted text-uppercase small mb-2">Description</h6>
