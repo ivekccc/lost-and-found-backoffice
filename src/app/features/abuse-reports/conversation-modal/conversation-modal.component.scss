@@ -1,20 +1,19 @@
 .participants {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--app-space-4);
 }
 
 .participant-label {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--bs-secondary-color);
+  font-size: var(--app-text-xs);
+  font-weight: 500;
+  color: var(--app-text-muted);
 }
 
 .messages {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--app-space-2);
   max-height: 60vh;
   overflow-y: auto;
 }
@@ -22,25 +21,25 @@
 .message {
   align-self: flex-end;
   max-width: 80%;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.75rem;
-  background: var(--bs-tertiary-bg);
-  border: 1px solid var(--bs-border-color);
+  padding: var(--app-space-2) var(--app-space-3);
+  background: var(--app-surface-subtle);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
 
   &.from-holder {
     align-self: flex-start;
   }
 
   &.highlighted {
-    border-color: var(--bs-danger);
-    box-shadow: 0 0 0 2px rgba(var(--bs-danger-rgb), 0.25);
+    background: var(--app-danger-soft);
+    border-color: var(--app-danger);
   }
 }
 
 .message-meta {
-  font-size: 0.75rem;
-  color: var(--bs-secondary-color);
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--app-space-1);
+  font-size: var(--app-text-xs);
+  color: var(--app-text-muted);
 }
 
 .message-body {

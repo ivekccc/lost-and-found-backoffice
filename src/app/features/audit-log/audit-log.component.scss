@@ -1,0 +1,24 @@
+.link-button {
+  padding: 0;
+  font: inherit;
+  color: var(--app-text);
+  text-align: left;
+  background: none;
+  border: none;
+
+  &:hover {
+    color: var(--app-accent-text);
+    text-decoration: underline;
+  }
+}
+
+.details-row td {
+  background-color: var(--app-surface-subtle);
+}
+
+.details {
+  margin: 0;
+  padding: var(--app-space-2) 0;
+  white-space: pre-wrap;
+  color: var(--app-text-secondary);
+}

@@ -7,6 +7,8 @@ import { AuthApiService } from '../api/auth-api.service';
 import { UserApiService } from '../api/user-api.service';
 import { AppStore } from '../../app.store';
 
+export const LAST_ACTIVITY_KEY = 'last_activity_at';
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly TOKEN_KEY = 'auth_token';
@@ -28,11 +30,15 @@ export class AuthService {
 
   login(data: AuthRequestDto) {
     return this.authApi.login(data).pipe(
-      tap((response) => {
+      switchMap((response) => {
         if (response.role !== UserRole.ADMIN) {
-          throw new Error('Access denied. Admin role required.');
+          return this.authApi.logout({ refreshToken: response.refreshToken }).pipe(
+            catchError(() => of(null)),
+            switchMap(() => throwError(() => new Error('This account does not have moderator access.'))),
+          );
         }
         this.setTokens(response.accessToken, response.refreshToken, response.role);
+        return of(response);
       }),
       switchMap(() => this.userApi.getProfile()),
       tap((user) => this.appStore.setState({ user })),
@@ -83,13 +89,28 @@ export class AuthService {
     this.clearSession();
   }
 
-  private clearSession() {
+  private clearSession(navigate = true) {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.ROLE_KEY);
+    localStorage.removeItem(LAST_ACTIVITY_KEY);
     this._isAuthenticated.set(false);
     this.appStore.setState({ user: null });
-    this.router.navigate(['/login']);
+    if (navigate) {
+      this.router.navigate(['/login']);
+    }
+  }
+
+  isAdminSession(): boolean {
+    const token = this.getToken();
+    if (!token) {
+      return false;
+    }
+    if (this.getRole() !== UserRole.ADMIN) {
+      this.clearSession(false);
+      return false;
+    }
+    return true;
   }
 
   getToken(): string | null {
@@ -104,6 +125,7 @@ export class AuthService {
     localStorage.setItem(this.TOKEN_KEY, token);
     localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
     localStorage.setItem(this.ROLE_KEY, role);
+    localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now()));
     this._isAuthenticated.set(true);
   }
 

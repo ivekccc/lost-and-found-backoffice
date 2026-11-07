@@ -1,7 +1,44 @@
-.match-row {
-  cursor: pointer;
+.score {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--app-space-2);
+  padding: 2px 4px;
+  margin: -2px -4px;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  border-radius: var(--app-radius-sm);
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.03);
+    background-color: var(--app-surface-hover);
+  }
+
+  &__value {
+    min-width: 22px;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  &__bar {
+    width: 56px;
+    height: 4px;
+    overflow: hidden;
+    background-color: var(--app-neutral-soft);
+    border-radius: 2px;
+
+    span {
+      display: block;
+      height: 100%;
+      background-color: var(--app-text-muted);
+    }
+  }
+
+  &--high &__bar span {
+    background-color: var(--app-success);
+  }
+
+  &--medium &__bar span {
+    background-color: var(--app-warning);
   }
 }

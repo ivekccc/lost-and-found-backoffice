@@ -1,44 +1,57 @@
-@if (loading()) {
-  <app-data-table-skeleton
-    [showReload]="true"
-    [showButton]="true"
-    [columnCount]="6"
-  />
-} @else {
+<div class="page page--fill">
+  <app-page-header title="Users" description="Everyone with an account. Open a user to restrict, block or review their activity." />
+
+  <div class="toolbar" role="search">
+    <app-search-input
+      placeholder="Search users"
+      label="Search users"
+      [value]="query.state().filters.search ?? ''"
+      (search)="query.setFilter('search', $event)"
+    />
+    <app-select ariaLabel="Status" emptyLabel="All statuses" width="160px" [options]="statusOptions" [value]="query.state().filters.status" (valueChange)="query.setFilter('status', $event)" />
+    <app-select ariaLabel="Role" emptyLabel="All roles" width="140px" [options]="roleOptions" [value]="query.state().filters.role" (valueChange)="query.setFilter('role', $event)" />
+    @if (filtered()) {
+      <button type="button" class="btn btn-ghost btn-sm" (click)="query.clearFilters()">Clear filters</button>
+    }
+  </div>
+
   <app-data-table
-    [data]="users()"
-    [headingText]="'All Users'"
-    [buttonText]="'New User'"
-    [emptyMessage]="'No users found'"
-    [showReload]="true"
-    (reload)="reloadUsers()"
+    caption="Users"
+    [columns]="columns"
+    [rows]="loader.rows()"
+    [total]="loader.total()"
+    [page]="query.state().page"
+    [size]="query.state().size"
+    [pageSizes]="query.pageSizes"
+    [sort]="query.state().sort"
+    [direction]="query.state().direction"
+    [loading]="loader.loading()"
+    [loaded]="loader.loaded()"
+    [error]="loader.error()"
+    (sortChange)="query.toggleSort($event)"
+    (pageChange)="query.setPage($event)"
+    (sizeChange)="query.setSize($event)"
+    (retry)="loader.reload()"
   >
-    <ng-template dataTableHeaderTemplate>
-      <tr>
-        <th>Username</th>
-        <th>Full Name</th>
-        <th>Email</th>
-        <th>Phone</th>
-        <th>Status</th>
-        <th>Created</th>
+    <ng-template appTableRow [appTableRowOf]="loader.rows()" let-row>
+      <tr class="row-clickable" (click)="openRow($event, row)">
+        <td class="mono cell-muted">{{ row.id }}</td>
+        <td>
+          <a class="cell-link cell-truncate" [routerLink]="['/users', row.id]">{{ fullName(row) }}</a>
+          <span class="cell-muted cell-truncate">{{ row.username }}</span>
+        </td>
+        <td><span class="cell-truncate" [title]="row.email">{{ row.email }}</span></td>
+        <td class="tabular">{{ row.phoneNumber ?? '—' }}</td>
+        <td><app-status [value]="userRole[row.role]" /></td>
+        <td><app-status [value]="userStatus[row.status]" /></td>
+        <td class="cell-muted" [title]="row.createdAt | date: 'd MMM y, HH:mm'">{{ row.createdAt | relativeTime }}</td>
       </tr>
     </ng-template>
-    <ng-template dataTableRowTemplate let-row="row">
-      <tr [routerLink]="['/users', row.id]">
-        <td>{{ row.username }}</td>
-        <td>{{ row.firstName }} {{ row.lastName }}</td>
-        <td>{{ row.email }}</td>
-        <td>{{ row.phoneNumber || '-' }}</td>
-        <td>
-          <span class="badge"
-            [class.bg-success]="row.status === 'ACTIVE'"
-            [class.bg-danger]="row.status === 'BLOCKED'"
-            [class.bg-warning]="row.status === 'PARTIALLY_BLOCKED'">
-            {{ row.status }}
-          </span>
-        </td>
-        <td>{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-      </tr>
+    <ng-template appTableEmpty>
+      <div class="text-center">
+        <p class="mb-1 fw-semibold">No users match these filters</p>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="query.clearFilters()">Clear filters</button>
+      </div>
     </ng-template>
   </app-data-table>
-}
+</div>

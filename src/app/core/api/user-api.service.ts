@@ -1,13 +1,20 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { HttpParams } from '@angular/common/http';
 import {
   UserDetailsDto,
-  UserListDto,
+  PageUserListDto,
   UserProfileDto,
   UserRole,
+  UserStatus,
 } from '@lost-and-found/api';
 import { ApiService } from './api.service';
+import { PageQueryParams, toHttpParams } from './query-params';
+
+export interface AdminUserQuery extends PageQueryParams {
+  role?: UserRole;
+  status?: UserStatus;
+  search?: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class UserApiService {
@@ -17,12 +24,8 @@ export class UserApiService {
     return this.api.get<UserProfileDto>('users/me');
   }
 
-  getAllUsers(role?: UserRole): Observable<UserListDto[]> {
-    let params = new HttpParams();
-    if (role) {
-      params = params.append('role', role);
-    }
-    return this.api.get<UserListDto[]>('admin/users', params);
+  getUsers(query: AdminUserQuery): Observable<PageUserListDto> {
+    return this.api.get<PageUserListDto>('admin/users', toHttpParams(query));
   }
 
   getUserById(id: number): Observable<UserDetailsDto> {
@@ -39,6 +42,10 @@ export class UserApiService {
 
   partialBlockUser(id: number): Observable<void> {
     return this.api.post<void>(`admin/users/${id}/partial-block`, {});
+  }
+
+  revokeSessions(id: number): Observable<void> {
+    return this.api.post<void>(`admin/users/${id}/sessions/revoke`, {});
   }
 
   unblockUser(id: number): Observable<void> {

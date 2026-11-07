@@ -2,12 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
+  computed,
   inject,
   OnInit,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DatePipe, NgClass } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import {
   FormControl,
   FormGroup,
@@ -18,7 +20,7 @@ import { EMPTY, catchError, tap } from 'rxjs';
 import { MatchingConfigDto, UpdateMatchingConfigRequest } from '@lost-and-found/api';
 import { MatchingConfigApiService } from '../../../core/api/matching-config-api.service';
 import { ErrorStateComponent } from '../../../shared/components/error-state/error-state.component';
-import { DetailsSkeletonComponent } from '../../../shared/components/details-skeleton/details-skeleton.component';
+import { ToastService } from '../../../shared/services/toast.service';
 
 const REQUIRED_WEIGHTS_SUM = 100;
 
@@ -27,16 +29,16 @@ const REQUIRED_WEIGHTS_SUM = 100;
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
-    NgClass,
     DatePipe,
     ErrorStateComponent,
-    DetailsSkeletonComponent,
   ],
   templateUrl: './matching-config-form.component.html',
 })
 export class MatchingConfigFormComponent implements OnInit {
+  private readonly toastService = inject(ToastService);
   private matchingConfigApi = inject(MatchingConfigApiService);
   private destroyRef = inject(DestroyRef);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   loading = signal(true);
   error = signal(false);
@@ -74,12 +76,10 @@ export class MatchingConfigFormComponent implements OnInit {
     ]),
   });
 
-  /**
-   * Recomputed on every keystroke so the sum warning is immediate. Reads the raw value because a
-   * control failing its own range validator still holds a number the admin can see and reason about.
-   */
   weightsSum = signal(0);
   weightsDifference = signal(0);
+  private readonly submitted = signal(false);
+  protected readonly sumInvalid = computed(() => this.submitted() && this.weightsSum() !== REQUIRED_WEIGHTS_SUM);
 
   ngOnInit(): void {
     this.form.valueChanges
@@ -113,9 +113,37 @@ export class MatchingConfigFormComponent implements OnInit {
       .subscribe();
   }
 
+  protected fieldError(name: keyof typeof this.form.controls): string | null {
+    const control = this.form.controls[name];
+    if (!control.touched || !control.errors) {
+      return null;
+    }
+    if (control.errors['required']) {
+      return 'Enter a value.';
+    }
+    if (control.errors['min']) {
+      return `Must be at least ${control.errors['min'].min}.`;
+    }
+    if (control.errors['max']) {
+      return `Must be at most ${control.errors['max'].max}.`;
+    }
+    return 'Enter a valid number.';
+  }
+
+  protected weightInvalid(name: 'weightDistance' | 'weightText' | 'weightTime'): boolean {
+    return !!this.fieldError(name) || this.sumInvalid();
+  }
+
+  protected weightDescribedBy(name: 'weightDistance' | 'weightText' | 'weightTime'): string | null {
+    const ids = [this.fieldError(name) ? `${name}-error` : null, this.sumInvalid() ? 'weights-sum' : null].filter(Boolean);
+    return ids.length ? ids.join(' ') : null;
+  }
+
   submit(): void {
+    this.submitted.set(true);
     if (this.form.invalid || this.weightsSum() !== REQUIRED_WEIGHTS_SUM) {
       this.form.markAllAsTouched();
+      setTimeout(() => this.host.nativeElement.querySelector<HTMLInputElement>('.is-invalid')?.focus());
       return;
     }
 
@@ -138,6 +166,7 @@ export class MatchingConfigFormComponent implements OnInit {
         tap((config) => {
           this.fill(config);
           this.saving.set(false);
+          this.toastService.success('Matching parameters saved', { detail: 'They apply to matches computed from now on.' });
         }),
         catchError(() => {
           this.form.enable({ emitEvent: false });

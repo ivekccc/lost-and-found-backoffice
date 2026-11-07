@@ -1,12 +1,12 @@
 <div class="bo-modal-header">
   <div>
-    <h4>How this match scored</h4>
+    <h4 id="modal-title">How this match scored</h4>
     <div class="text-muted small">
-      Match #{{ data.id }} · computed {{ data.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+      Match #{{ data.id }} · computed {{ data.createdAt | date: 'd MMM y, HH:mm' }}
     </div>
   </div>
-  <button type="button" class="btn-close-modal" (click)="close()">
-    <i class="fa-solid fa-xmark"></i>
+  <button type="button" class="btn-close-modal" aria-label="Close" (click)="close()">
+    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
   </button>
 </div>
 
@@ -17,34 +17,34 @@
       <a [routerLink]="['/reports', data.lostReportId]" (click)="close()">
         {{ data.lostReportTitle }}
       </a>
-      @if (data.lostReportStatus !== 'ACTIVE') {
-        <span class="badge bg-secondary ms-1">{{ data.lostReportStatus }}</span>
+      @if (data.lostReportStatus !== activeStatus) {
+        <app-status class="ms-1" [value]="reportStatus[data.lostReportStatus]" />
       }
     </div>
-    <i class="fa-solid fa-arrows-left-right text-muted"></i>
+    <i class="fa-solid fa-arrows-left-right text-muted" aria-hidden="true"></i>
     <div class="pair-side text-end">
       <div class="pair-label">Found</div>
       <a [routerLink]="['/reports', data.foundReportId]" (click)="close()">
         {{ data.foundReportTitle }}
       </a>
-      @if (data.foundReportStatus !== 'ACTIVE') {
-        <span class="badge bg-secondary ms-1">{{ data.foundReportStatus }}</span>
+      @if (data.foundReportStatus !== activeStatus) {
+        <app-status class="ms-1" [value]="reportStatus[data.foundReportStatus]" />
       }
     </div>
   </div>
 
-  <h6 class="section-title">Candidate filters passed</h6>
+  <h5 class="section-title">Candidate filters passed</h5>
   <div class="filters mb-4">
-    <span class="filter"><i class="fa-solid fa-check"></i> Opposite types</span>
-    <span class="filter"><i class="fa-solid fa-check"></i> Same category — {{ data.categoryName }}</span>
-    <span class="filter"><i class="fa-solid fa-check"></i> Different owners</span>
+    <span class="filter"><i class="fa-solid fa-check" aria-hidden="true"></i> Opposite types</span>
+    <span class="filter"><i class="fa-solid fa-check" aria-hidden="true"></i> Same category — {{ data.categoryName }}</span>
+    <span class="filter"><i class="fa-solid fa-check" aria-hidden="true"></i> Different owners</span>
     <span class="filter">
-      <i class="fa-solid fa-check"></i>
+      <i class="fa-solid fa-check" aria-hidden="true"></i>
       Within {{ data.config.maxDistanceKm | number: '1.0-2' }} km
     </span>
   </div>
 
-  <h6 class="section-title">Score components</h6>
+  <h5 class="section-title">Score components</h5>
   <table class="calc mb-3">
     <tbody>
       <tr>
@@ -92,7 +92,7 @@
     {{ meetsThreshold ? 'suggested to both sides' : 'below the suggestion threshold' }}
   </div>
 
-  <h6 class="section-title">Raw inputs</h6>
+  <h5 class="section-title">Raw inputs</h5>
   <dl class="inputs mb-4">
     <dt>Distance between locations</dt>
     <dd>{{ data.distanceKm | number: '1.2-2' }} km</dd>
@@ -102,18 +102,18 @@
     <dd>{{ data.timeGapDays }} {{ data.timeGapDays === 1 ? 'day' : 'days' }}</dd>
   </dl>
 
-  <h6 class="section-title">State</h6>
+  <h5 class="section-title">State</h5>
   <dl class="inputs">
     <dt>Status</dt>
-    <dd>{{ data.status }}</dd>
+    <dd><app-status [value]="matchStatus[data.status]" /></dd>
     <dt>Notified</dt>
-    <dd>{{ data.notifiedAt ? (data.notifiedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}</dd>
+    <dd>{{ data.notifiedAt ? (data.notifiedAt | date: 'd MMM y, HH:mm') : '—' }}</dd>
     <dt>Dismissed by lost side</dt>
-    <dd>{{ data.lostDismissedAt ? (data.lostDismissedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}</dd>
+    <dd>{{ data.lostDismissedAt ? (data.lostDismissedAt | date: 'd MMM y, HH:mm') : '—' }}</dd>
     <dt>Dismissed by found side</dt>
-    <dd>{{ data.foundDismissedAt ? (data.foundDismissedAt | date: 'dd.MM.yyyy HH:mm') : '—' }}</dd>
+    <dd>{{ data.foundDismissedAt ? (data.foundDismissedAt | date: 'd MMM y, HH:mm') : '—' }}</dd>
     <dt>Last recomputed</dt>
-    <dd>{{ data.updatedAt | date: 'dd.MM.yyyy HH:mm' }}</dd>
+    <dd>{{ data.updatedAt | date: 'd MMM y, HH:mm' }}</dd>
   </dl>
 
   <p class="text-muted small mb-0 mt-4">
@@ -123,5 +123,5 @@
 </div>
 
 <div class="bo-modal-footer">
-  <button type="button" class="btn btn-outline-secondary" (click)="close()">Close</button>
+  <button type="button" class="btn btn-secondary" (click)="close()">Close</button>
 </div>

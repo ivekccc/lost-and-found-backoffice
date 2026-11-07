@@ -1,0 +1,108 @@
+.chart {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--app-space-2);
+  margin: 0;
+
+  &__axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 160px;
+    font-size: var(--app-text-xs);
+    color: var(--app-text-muted);
+    text-align: right;
+    transform: translateY(-6px);
+  }
+
+  &__plot {
+    position: relative;
+    min-width: 0;
+  }
+
+  &__grid {
+    position: absolute;
+    inset: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 160px;
+    pointer-events: none;
+
+    span {
+      border-top: 1px dashed var(--app-border);
+    }
+
+    span:last-child {
+      border-top-style: solid;
+    }
+  }
+
+  &__bars {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 160px;
+  }
+
+  &__day {
+    display: flex;
+    flex: 1;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 1px;
+    min-width: 0;
+    height: 100%;
+
+    &:hover .chart__bar {
+      opacity: 0.75;
+    }
+  }
+
+  &__bar {
+    display: block;
+    width: min(45%, 10px);
+    min-height: 0;
+    border-radius: 2px 2px 0 0;
+    transform-origin: bottom;
+    animation: bar-grow var(--app-duration-base) var(--app-ease-out);
+
+    &--posted {
+      background-color: var(--app-text-secondary);
+    }
+
+    &--reunited {
+      background-color: var(--app-accent);
+    }
+  }
+
+  &__labels {
+    display: flex;
+    gap: 2px;
+    margin-top: var(--app-space-1);
+    font-size: var(--app-text-xs);
+    color: var(--app-text-muted);
+
+    span {
+      flex: 1;
+      min-width: 0;
+      overflow: visible;
+      white-space: nowrap;
+    }
+
+    span:last-child {
+      direction: rtl;
+    }
+  }
+}
+
+@keyframes bar-grow {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}

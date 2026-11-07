@@ -1,0 +1,30 @@
+<div class="toasts" aria-live="polite" aria-relevant="additions">
+  @for (toast of toastService.toasts(); track toast.id) {
+    <div
+      class="toast-item"
+      [class.toast-item--leaving]="toast.leaving"
+      [class]="'toast-item--' + toast.tone"
+      [attr.role]="toast.tone === 'error' ? 'alert' : 'status'"
+      (mouseenter)="toastService.pause(toast.id)"
+      (mouseleave)="toastService.resume(toast.id)"
+      (focusin)="toastService.pause(toast.id)"
+      (focusout)="toastService.resume(toast.id)"
+    >
+      <i class="fa-solid toast-item__icon" [class]="icon(toast)" aria-hidden="true"></i>
+      <div class="toast-item__text">
+        <p class="toast-item__message">{{ toast.message }}</p>
+        @if (toast.detail) {
+          <p class="toast-item__detail">{{ toast.detail }}</p>
+        }
+      </div>
+      @if (toast.action) {
+        <button type="button" class="btn btn-ghost btn-sm toast-item__action" (click)="runAction(toast)">
+          {{ toast.action.label }}
+        </button>
+      }
+      <button type="button" class="btn btn-ghost btn-sm btn-icon" aria-label="Dismiss" (click)="toastService.dismiss(toast.id)">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+  }
+</div>

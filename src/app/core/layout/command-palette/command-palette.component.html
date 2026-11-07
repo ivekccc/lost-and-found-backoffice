@@ -1,0 +1,54 @@
+<div class="palette">
+  <div class="palette__search">
+    <i class="fa-solid fa-magnifying-glass palette__search-icon" aria-hidden="true"></i>
+    <input
+      class="palette__input"
+      type="text"
+      role="combobox"
+      aria-label="Search or jump to"
+      aria-expanded="true"
+      aria-controls="command-palette-list"
+      aria-autocomplete="list"
+      [attr.aria-activedescendant]="commands().length ? 'command-' + activeIndex() : null"
+      placeholder="Search users, reports, pages, or type an id"
+      autocomplete="off"
+      spellcheck="false"
+      [value]="query()"
+      (input)="onInput($any($event.target).value)"
+      (keydown)="onKeydown($event)"
+    />
+    <kbd class="kbd">Esc</kbd>
+  </div>
+
+  <ul class="palette__list" id="command-palette-list" role="listbox" aria-label="Results">
+    @for (command of commands(); track command.id; let index = $index) {
+      <li
+        class="palette__item"
+        role="option"
+        [id]="'command-' + index"
+        [attr.aria-selected]="index === activeIndex()"
+        [class.palette__item--active]="index === activeIndex()"
+        (mouseenter)="activeIndex.set(index)"
+        (click)="execute(command)"
+      >
+        <i class="fa-solid palette__icon" [class]="command.icon" aria-hidden="true"></i>
+        <span class="palette__label">{{ command.label }}</span>
+        @if (command.detail) {
+          <span class="palette__detail">{{ command.detail }}</span>
+        }
+      </li>
+    } @empty {
+      <li class="palette__empty" role="option" aria-disabled="true">{{ searching() ? 'Searching…' : searchFailed() ? 'Search is unavailable right now' : 'No results for “' + query() + '”' }}</li>
+    }
+  </ul>
+
+  @if (searching() && commands().length) {
+    <p class="palette__status" role="status">Searching…</p>
+  } @else if (searchFailed() && commands().length) {
+    <p class="palette__status" role="status">Search is unavailable right now</p>
+  }
+  <div class="palette__footer" aria-hidden="true">
+    <span><kbd class="kbd">↑</kbd><kbd class="kbd">↓</kbd> to move</span>
+    <span><kbd class="kbd">Enter</kbd> to open</span>
+  </div>
+</div>

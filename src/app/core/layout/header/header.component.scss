@@ -1,20 +1,108 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  height: 56px;
-  padding: 0 1.5rem;
-  background-color: #fff;
-  border-bottom: 1px solid #dee2e6;
+  gap: var(--app-space-3);
+  height: var(--app-header-height);
+  padding: 0 var(--app-space-5);
+  background-color: var(--app-surface);
+  border-bottom: 1px solid var(--app-border);
+
+  &__menu {
+    display: none;
+  }
+
+  &__search {
+    display: flex;
+    align-items: center;
+    gap: var(--app-space-2);
+    width: min(420px, 100%);
+    height: 32px;
+    padding: 0 var(--app-space-2) 0 var(--app-space-3);
+    color: var(--app-text-muted);
+    text-align: left;
+    background-color: var(--app-surface-subtle);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius);
+    transition: border-color var(--app-duration-instant) var(--app-ease-out);
+
+    &:hover {
+      border-color: var(--app-border-strong);
+    }
+  }
+
+  &__search-label {
+    flex: 1;
+  }
+
+  &__search-keys {
+    display: inline-flex;
+    gap: 2px;
+  }
 
   &__actions {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--app-space-1);
+    margin-left: auto;
   }
 
   &__user {
+    display: flex;
+    align-items: center;
+    gap: var(--app-space-2);
+    height: 32px;
+    padding: 0 var(--app-space-2) 0 var(--app-space-1);
+    color: var(--app-text);
+    background: none;
+    border: none;
+    border-radius: var(--app-radius);
+
+    &:hover {
+      background-color: var(--app-surface-hover);
+    }
+  }
+
+  &__avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--app-text-secondary);
+    background-color: var(--app-neutral-soft);
+    border-radius: 50%;
+  }
+
+  &__user-name {
     font-weight: 500;
-    font-size: 0.875rem;
+  }
+
+  &__chevron {
+    font-size: 10px;
+    color: var(--app-text-muted);
+  }
+}
+
+@media (max-width: 991.98px) {
+  .header {
+    padding: 0 var(--app-space-3);
+
+    &__menu {
+      display: inline-flex;
+    }
+
+    &__search-label,
+    &__search-keys,
+    &__user-name {
+      display: none;
+    }
+
+    &__search {
+      width: 32px;
+      justify-content: center;
+      padding: 0;
+    }
   }
 }

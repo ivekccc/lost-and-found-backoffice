@@ -1,24 +1,23 @@
-@if (data.title) {
-  <div class="modal-header">
-    <h5 class="modal-title">{{ data.title }}</h5>
-    @if (data.visibleCloseButton !== false) {
-      <button type="button" class="btn-close" (click)="cancel()"></button>
-    }
+<form class="confirm" (submit)="$event.preventDefault(); confirm()">
+  <h2 class="confirm__title" id="confirm-title">{{ data.title }}</h2>
+  <p class="confirm__message">{{ data.messageContent }}</p>
+
+  @if (data.requireText) {
+    <label class="form-label" for="confirm-text">{{ data.requireTextLabel ?? 'Type ' + data.requireText + ' to confirm' }}</label>
+    <input
+      id="confirm-text"
+      class="form-control mb-3"
+      autocomplete="off"
+      spellcheck="false"
+      [value]="typed()"
+      (input)="typed.set($any($event.target).value)"
+    />
+  }
+
+  <div class="confirm__actions">
+    <button type="button" class="btn btn-secondary" (click)="cancel()">{{ data.cancelText || 'Cancel' }}</button>
+    <button type="submit" class="btn" [class.btn-danger-solid]="data.destructive" [class.btn-primary]="!data.destructive" [disabled]="!matches()">
+      {{ data.confirmText || 'Confirm' }}
+    </button>
   </div>
-}
-<div class="modal-body">
-  <p>{{ data.messageContent }}</p>
-</div>
-<div class="modal-footer">
-  <button class="btn btn-outline-secondary" (click)="cancel()">
-    {{ data.cancelText || 'Cancel' }}
-  </button>
-  <button
-    class="btn"
-    [class.btn-danger]="data.destructive"
-    [class.btn-primary]="!data.destructive"
-    (click)="confirm()"
-  >
-    {{ data.confirmText || 'Confirm' }}
-  </button>
-</div>
+</form>

@@ -35,12 +35,20 @@ export const routes: Routes = [
         loadComponent: () => import('./features/users/user-details/user-details.component')
       },
       {
+        path: 'audit-log',
+        loadComponent: () => import('./features/audit-log/audit-log.component')
+      },
+      {
         path: 'definitions',
         loadComponent: () => import('./features/definitions/definitions.component')
       },
       {
         path: 'abuse-reports',
         loadComponent: () => import('./features/abuse-reports/abuse-reports.component')
+      },
+      {
+        path: 'claims',
+        loadComponent: () => import('./features/claims/claims.component')
       },
       {
         path: 'matches',

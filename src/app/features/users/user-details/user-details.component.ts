@@ -1,178 +1,152 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  inject,
-  OnInit,
-  signal,
-} from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, inject, viewChild } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { UserDetailsDto } from '@lost-and-found/api';
-import { catchError, EMPTY, Observable, tap } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { CdkMenu, CdkMenuItem, CdkMenuTrigger } from '@angular/cdk/menu';
+import { map, tap } from 'rxjs';
+import { AppLanguage, AuditTargetType, UserDetailsDto, UserRole, UserStatus } from '@lost-and-found/api';
 import { UserApiService } from '../../../core/api/user-api.service';
-import { ConfirmModalService } from '../../../shared/services/confirm-modal.service';
-import { DetailsSkeletonComponent } from '../../../shared/components/details-skeleton/details-skeleton.component';
+import { ReportsApiService } from '../../../core/api/reports-api.service';
+import { ClaimsApiService } from '../../../core/api/claims-api.service';
+import { ToastService } from '../../../shared/services/toast.service';
+import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
 import { ErrorStateComponent } from '../../../shared/components/error-state/error-state.component';
+import { StatusBadgeComponent } from '../../../shared/ui/status-badge.component';
+import { CLAIM_STATUS, REPORT_STATUS, REPORT_TYPE, USER_ROLE, USER_STATUS } from '../../../shared/ui/status';
+import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
+import { createResourceLoader, routeId$ } from '../../../shared/data/resource-loader';
+import { createPagedLoader } from '../../../shared/data/paged-loader';
+import { whenPresent } from '../../../shared/data/empty-page';
+import { ModerationActionService, ModerationAction } from '../../../shared/services/moderation-action.service';
+import { ModerationHistoryComponent } from '../../../shared/components/moderation-history/moderation-history.component';
+import { ComplaintsPanelComponent } from '../../../shared/components/complaints-panel/complaints-panel.component';
+import { PanelStateComponent } from '../../../shared/components/panel-state/panel-state.component';
+import { describeHttpError } from '../../../core/utils/http-error';
+
+const PREVIEW_SIZE = 5;
 
 @Component({
   selector: 'app-user-details',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    DatePipe,
-    RouterLink,
-    DetailsSkeletonComponent,
-    ErrorStateComponent,
-  ],
+  imports: [PageHeaderComponent, ErrorStateComponent, StatusBadgeComponent, RelativeTimePipe, DatePipe, RouterLink, CdkMenuTrigger, CdkMenu, CdkMenuItem, ModerationHistoryComponent, ComplaintsPanelComponent, PanelStateComponent],
   templateUrl: './user-details.component.html',
   styleUrl: './user-details.component.scss',
 })
-export default class UserDetailsComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private userApi = inject(UserApiService);
-  private confirmModalService = inject(ConfirmModalService);
-  private destroyRef = inject(DestroyRef);
+export default class UserDetailsComponent {
+  private readonly router = inject(Router);
+  private readonly userApi = inject(UserApiService);
+  private readonly reportsApi = inject(ReportsApiService);
+  private readonly claimsApi = inject(ClaimsApiService);
+  private readonly toastService = inject(ToastService);
 
-  user = signal<UserDetailsDto | null>(null);
-  loading = signal(true);
-  error = signal(false);
-  linkCopied = signal(false);
-  deleting = signal(false);
-  moderating = signal(false);
+  private readonly userId = toSignal(routeId$(inject(ActivatedRoute).paramMap.pipe(map((params) => params.get('id')))), {
+    initialValue: null,
+  });
+  protected readonly user = createResourceLoader(this.userId, (id) => this.userApi.getUserById(id));
+  protected readonly reports = createPagedLoader(this.userId, whenPresent((id: number) => this.reportsApi.getReports({ ownerId: id, size: PREVIEW_SIZE })));
+  protected readonly claims = createPagedLoader(this.userId, whenPresent((id: number) => this.claimsApi.getClaims({ claimantId: id, size: PREVIEW_SIZE })));
+  private readonly complaints = viewChild(ComplaintsPanelComponent);
+  private readonly history = viewChild(ModerationHistoryComponent);
+  protected readonly moderation = inject(ModerationActionService);
+  protected readonly id = this.userId;
+  protected readonly auditTarget = AuditTargetType.USER;
+  protected readonly loadError = computed(() => (this.user.error() ? describeHttpError(this.user.error()) : null));
+  protected readonly fullName = computed(() => {
+    const user = this.user.value();
+    return user ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.username : 'User';
+  });
+  protected readonly canModerate = computed(() => {
+    const user = this.user.value();
+    return !!user && user.role !== UserRole.ADMIN && user.status !== UserStatus.DELETED;
+  });
+  protected readonly isRestricted = computed(() => {
+    const status = this.user.value()?.status;
+    return status === UserStatus.BLOCKED || status === UserStatus.PARTIALLY_BLOCKED;
+  });
 
-  ngOnInit(): void {
-    this._loadUser();
-  }
+  protected readonly userStatus = USER_STATUS;
+  protected readonly userRole = USER_ROLE;
+  protected readonly reportStatus = REPORT_STATUS;
+  protected readonly reportType = REPORT_TYPE;
+  protected readonly claimStatus = CLAIM_STATUS;
+  protected readonly statuses = UserStatus;
+  protected readonly roles = UserRole;
+  protected readonly languages: Record<AppLanguage, string> = { [AppLanguage.SR_LATN]: 'Serbian', [AppLanguage.EN]: 'English' };
 
-  blockUser(): void {
-    const user = this.user();
-    if (!user) {
-      return;
-    }
-    this.confirmModalService
-      .openConfirm(
-        `Block ${user.email}? They will be unable to log in, their active listings will be hidden and pending claims declined.`,
-        { title: 'Block user', confirmText: 'Block', destructive: true },
-      )
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((confirmed) => {
-        if (confirmed) {
-          this._moderate(this.userApi.blockUser(user.id));
-        }
-      });
-  }
-
-  partialBlockUser(): void {
-    const user = this.user();
-    if (!user) {
-      return;
-    }
-    this.confirmModalService
-      .openConfirm(
-        `Restrict ${user.email}? They can still browse and answer claims, but cannot post found items or send verification questions.`,
-        { title: 'Restrict user', confirmText: 'Restrict' },
-      )
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((confirmed) => {
-        if (confirmed) {
-          this._moderate(this.userApi.partialBlockUser(user.id));
-        }
-      });
-  }
-
-  unblockUser(): void {
-    const user = this.user();
-    if (!user) {
-      return;
-    }
-    this._moderate(this.userApi.unblockUser(user.id));
-  }
-
-  deleteUser(): void {
-    const user = this.user();
-    if (!user) {
-      return;
-    }
-
-    this.confirmModalService
-      .openConfirm(
-        `Delete ${user.email}? This erases their personal data and reports, and anonymizes claims on other users' reports. This cannot be undone.`,
-        { title: 'Delete account', confirmText: 'Delete', destructive: true },
-      )
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((confirmed) => {
-        if (!confirmed) {
-          return;
-        }
-        this.deleting.set(true);
-        this.userApi
-          .deleteUser(user.id)
-          .pipe(
-            tap(() => this.router.navigate(['/users'])),
-            catchError(() => {
-              this.deleting.set(false);
-              return EMPTY;
-            }),
-            takeUntilDestroyed(this.destroyRef),
-          )
-          .subscribe();
-      });
-  }
-
-  private _moderate(action: Observable<void>): void {
-    this.moderating.set(true);
-    action
-      .pipe(
-        tap(() => {
-          this.moderating.set(false);
-          this._loadUser();
-        }),
-        catchError(() => {
-          this.moderating.set(false);
-          return EMPTY;
-        }),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe();
-  }
-
-  retryLoad(): void {
-    this._loadUser();
-  }
-
-  shareLink(): void {
-    navigator.clipboard.writeText(window.location.href).then(() => {
-      this.linkCopied.set(true);
-      setTimeout(() => this.linkCopied.set(false), 2000);
+  protected restrict(user: UserDetailsDto): void {
+    this.runAndRefresh({
+      title: 'Restrict this user?',
+      message: `${user.email} can still browse and answer questions, but cannot post found items or send verification questions. Pending complaints about them are closed as actioned.`,
+      confirmText: 'Restrict user',
+      run: () => this.userApi.partialBlockUser(user.id),
+      doneMessage: 'User restricted',
     });
   }
 
-  private _loadUser(): void {
-    const idParam = this.route.snapshot.paramMap.get('id');
-    const id = Number(idParam);
+  protected block(user: UserDetailsDto): void {
+    this.runAndRefresh({
+      title: 'Block this user?',
+      message: `${user.email} will be signed out and cannot sign in. Their active reports are hidden and pending claims on them are declined.`,
+      confirmText: 'Block user',
+      destructive: true,
+      run: () => this.userApi.blockUser(user.id),
+      doneMessage: 'User blocked',
+    });
+  }
 
-    if (!id || Number.isNaN(id)) {
-      this.error.set(true);
-      this.loading.set(false);
-      return;
-    }
+  protected unblock(user: UserDetailsDto): void {
+    this.runAndRefresh({
+      title: 'Lift the restrictions?',
+      message: `${user.email} gets full access back. Reports hidden by the block become visible again.`,
+      confirmText: 'Lift restrictions',
+      run: () => this.userApi.unblockUser(user.id),
+      doneMessage: 'Restrictions lifted',
+    });
+  }
 
-    this.loading.set(true);
-    this.error.set(false);
+  protected revokeSessions(user: UserDetailsDto): void {
+    this.runAndRefresh({
+      title: 'Sign out of every device?',
+      message: `${user.email} will need to sign in again on every phone and browser. Use this after a suspected account takeover.`,
+      confirmText: 'Sign out everywhere',
+      run: () => this.userApi.revokeSessions(user.id),
+      doneMessage: 'Signed out of every device',
+    });
+  }
 
-    this.userApi
-      .getUserById(id)
+  protected deleteAccount(user: UserDetailsDto): void {
+    this.moderation
+      .confirm({
+        title: 'Delete this account?',
+        message: 'This erases their personal data, reports and photos, and anonymizes their claims on other people’s reports. It cannot be undone.',
+        confirmText: 'Delete account',
+        destructive: true,
+        requireText: user.email,
+        requireTextLabel: `Type ${user.email} to confirm`,
+        run: () => this.userApi.deleteUser(user.id),
+        doneMessage: 'Account deleted',
+      })
+      .pipe(tap(() => this.router.navigate(['/users'])))
+      .subscribe();
+  }
+
+  protected copy(value: string, label: string): void {
+    navigator.clipboard
+      .writeText(value)
+      .then(() => this.toastService.info(`${label} copied`))
+      .catch(() => this.toastService.error('Could not copy to the clipboard'));
+  }
+
+  private runAndRefresh(action: ModerationAction): void {
+    this.moderation
+      .confirm(action)
       .pipe(
-        tap((user) => {
-          this.user.set(user);
-          this.loading.set(false);
-        }),
-        catchError(() => {
-          this.error.set(true);
-          this.loading.set(false);
-          return EMPTY;
+        tap(() => {
+          this.user.reload();
+          this.reports.reload();
+          this.claims.reload();
+          this.complaints()?.reload();
+          this.history()?.reload();
         }),
       )
       .subscribe();

@@ -1,11 +1,190 @@
 .login {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #f8f9fa;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 100vh;
+  background-color: var(--app-surface);
 
-  &__card {
-    width: 400px;
+  @media (min-width: 992px) {
+    grid-template-columns: minmax(440px, 5fr) 6fr;
+  }
+
+  &__main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--app-space-6);
+    padding: var(--app-space-5) var(--app-space-4);
+
+    @media (min-width: 576px) {
+      padding: var(--app-space-6) 56px;
+    }
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--app-space-2);
+    font-weight: 600;
+  }
+
+  &__mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--app-on-accent);
+    background-color: var(--app-accent);
+    border-radius: var(--app-radius-sm);
+  }
+
+  &__scope {
+    font-weight: 400;
+    color: var(--app-text-muted);
+  }
+
+  &__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: var(--app-text-xl);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  &__subtitle {
+    margin: var(--app-space-2) 0 var(--app-space-5);
+    color: var(--app-text-secondary);
+  }
+
+  &__error {
+    display: flex;
+    align-items: baseline;
+    gap: var(--app-space-2);
+    margin: 0 0 var(--app-space-4);
+    padding: var(--app-space-2) var(--app-space-3);
+    color: var(--app-danger);
+    background-color: var(--app-danger-soft);
+    border-radius: var(--app-radius);
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--app-space-4);
+  }
+
+  &__password {
+    position: relative;
+
+    .form-control {
+      padding-right: 40px;
+    }
+
+    .form-control.is-invalid {
+      padding-right: 64px;
+      background-position: right 40px center;
+    }
+  }
+
+  &__reveal {
+    position: absolute;
+    top: 50%;
+    right: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 28px;
+    padding: 0;
+    color: var(--app-text-muted);
+    background: none;
+    border: none;
+    border-radius: var(--app-radius-sm);
+    transform: translateY(-50%);
+    transition: color var(--app-duration-instant) var(--app-ease-out), background-color var(--app-duration-instant) var(--app-ease-out);
+
+    &:hover {
+      color: var(--app-text);
+      background-color: var(--app-surface-hover);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--app-accent);
+      outline-offset: 0;
+    }
+  }
+
+  &__hint {
+    margin: var(--app-space-1) 0 0;
+    font-size: var(--app-text-sm);
+    color: var(--app-warning);
+  }
+
+  &__submit {
+    width: 100%;
+    margin-top: var(--app-space-2);
+  }
+
+  &__note {
+    max-width: 360px;
+    margin: 0;
+    font-size: var(--app-text-sm);
+    color: var(--app-text-muted);
+  }
+
+  &__aside {
+    display: none;
+
+    @media (min-width: 992px) {
+      display: flex;
+      position: relative;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 56px;
+      overflow: hidden;
+      background-color: var(--app-sidebar);
+      border-left: 1px solid var(--app-border);
+    }
+  }
+
+  &__wordmark,
+  &__statement {
+    position: relative;
+  }
+
+  &__wordmark {
+    margin: 0;
+    font-size: clamp(120px, 16vw, 240px);
+    font-weight: 600;
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+    color: var(--app-accent);
+  }
+
+  &__statement {
+    max-width: 420px;
+  }
+
+  &__statement-title {
+    margin: 0 0 var(--app-space-2);
+    font-size: var(--app-text-lg);
+    font-weight: 600;
+    color: var(--app-text);
+  }
+
+  &__statement-text {
+    margin: 0;
+    font-size: var(--app-text-md);
+    line-height: 1.55;
+    color: var(--app-text-secondary);
   }
 }

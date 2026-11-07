@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from './core/services/auth.service';
@@ -21,8 +22,10 @@ export class AppInitService {
 
     return this.userApi.getProfile().pipe(
       tap((user) => this.appStore.setState({ user })),
-      catchError(() => {
-        this.authService.logout();
+      catchError((error: unknown) => {
+        if (error instanceof HttpErrorResponse && (error.status === 401 || error.status === 403)) {
+          this.authService.logout();
+        }
         return of(void 0);
       }),
     );

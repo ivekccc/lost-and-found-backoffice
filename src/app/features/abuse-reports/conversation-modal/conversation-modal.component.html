@@ -1,12 +1,12 @@
 <div class="bo-modal-header">
   <div>
-    <h4>Conversation</h4>
+    <h4 id="modal-title">Conversation</h4>
     <div class="text-muted small">
       <a [routerLink]="['/reports', data.reportId]" (click)="close()">{{ data.reportTitle }}</a>
     </div>
   </div>
-  <button type="button" class="btn-close-modal" (click)="close()">
-    <i class="fa-solid fa-xmark"></i>
+  <button type="button" class="btn-close-modal" aria-label="Close" (click)="close()">
+    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
   </button>
 </div>
 

@@ -9,6 +9,7 @@ export class ModalService {
 
   openLeftModal<T>(content: Type<T> | TemplateRef<any>, config?: Partial<ModalOptions<T>>): BsModalRef<T> {
     const leftModalConfig: ModalOptions<T> = {
+      ariaLabelledBy: 'modal-title',
       ...config,
       class: `bo-modal bo-modal-left ${config?.class || ''}`.trim(),
     } as ModalOptions<T>;
@@ -18,6 +19,7 @@ export class ModalService {
 
   openRightModal<T>(content: Type<T> | TemplateRef<any>, config?: Partial<ModalOptions<T>>): BsModalRef<T> {
     const rightModalConfig: ModalOptions<T> = {
+      ariaLabelledBy: 'modal-title',
       ...config,
       class: `bo-modal bo-modal-right ${config?.class || ''}`.trim(),
     } as ModalOptions<T>;
@@ -27,6 +29,7 @@ export class ModalService {
 
   openLargeLeftModal<T>(content: Type<T> | TemplateRef<any>, config?: Partial<ModalOptions<T>>): BsModalRef<T> {
     const largeLeftModalConfig: ModalOptions<T> = {
+      ariaLabelledBy: 'modal-title',
       ...config,
       class: `bo-modal-large bo-modal-left ${config?.class || ''}`.trim(),
     } as ModalOptions<T>;
@@ -34,12 +37,9 @@ export class ModalService {
     return this.bsModalService.show(content, largeLeftModalConfig);
   }
 
-  /**
-   * Centred dialog, not a side sheet — deliberately does not carry the `bo-modal` class, whose
-   * full-height fixed-width geometry is what makes the left/right panels slide in from the edge.
-   */
   openCentralModal<T>(content: Type<T> | TemplateRef<any>, config?: Partial<ModalOptions<T>>): BsModalRef<T> {
     const centralModalConfig: ModalOptions<T> = {
+      ariaLabelledBy: 'modal-title',
       ...config,
       class: `bo-modal-center modal-dialog-centered ${config?.class || ''}`.trim(),
     } as ModalOptions<T>;
@@ -49,6 +49,7 @@ export class ModalService {
 
   openLargeRightModal<T>(content: Type<T> | TemplateRef<any>, config?: Partial<ModalOptions<T>>): BsModalRef<T> {
     const largeRightModalConfig: ModalOptions<T> = {
+      ariaLabelledBy: 'modal-title',
       ...config,
       class: `bo-modal-large bo-modal-right ${config?.class || ''}`.trim(),
     } as ModalOptions<T>;

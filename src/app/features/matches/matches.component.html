@@ -1,124 +1,56 @@
-<div class="d-flex flex-wrap gap-3 mb-3 align-items-end">
-  <div style="width: 260px">
-    <ng-select
-      [items]="statusOptions"
-      bindLabel="label"
-      bindValue="value"
-      placeholder="All statuses"
-      [ngModel]="selectedStatus()"
-      (ngModelChange)="onStatusChange($event)"
-    >
-    </ng-select>
-  </div>
-  <div style="width: 160px">
-    <input
-      type="number"
-      class="form-control"
-      placeholder="Min score"
-      min="0"
-      max="100"
-      [ngModel]="minScore()"
-      (ngModelChange)="onMinScoreChange($event)"
-    />
-  </div>
-</div>
-
-@if (loading()) {
-  <app-data-table-skeleton [showReload]="true" [columnCount]="7" />
-} @else if (error()) {
-  <app-error-state
-    title="Unable to load matches"
-    message="The match list could not be loaded. The server may be unreachable."
-    retryText="Retry"
-    (retry)="reload()"
+<div class="page page--fill">
+  <app-page-header
+    title="Matches"
+    description="Pairs of lost and found reports the matching engine scored as likely the same item. Open one to see how the score was calculated."
   />
-} @else {
+
+  <div class="toolbar">
+    <app-select ariaLabel="Minimum score" emptyLabel="Any score" width="150px" [options]="scoreOptions" [value]="query.state().filters.minScore" (valueChange)="query.setFilter('minScore', $event)" />
+  </div>
+
   <app-data-table
-    [data]="matches()"
-    [headingText]="'Matches'"
-    [emptyMessage]="'No matches generated yet'"
-    [showReload]="true"
-    (reload)="reload()"
+    caption="Matches"
+    [columns]="columns"
+    [rows]="loader.rows()"
+    [total]="loader.total()"
+    [page]="query.state().page"
+    [size]="query.state().size"
+    [pageSizes]="query.pageSizes"
+    [loading]="loader.loading()"
+    [loaded]="loader.loaded()"
+    [error]="loader.error()"
+    (pageChange)="query.setPage($event)"
+    (sizeChange)="query.setSize($event)"
+    (retry)="loader.reload()"
   >
-    <ng-template dataTableHeaderTemplate>
-      <tr>
-        <th>ID</th>
-        <th>Lost report</th>
-        <th>Found report</th>
-        <th>Score</th>
-        <th>Breakdown</th>
-        <th>Dismissed</th>
-        <th>Created</th>
+    <ng-template appTableRow [appTableRowOf]="loader.rows()" let-row>
+      <tr class="row-clickable" [attr.aria-busy]="openingId() === row.id" (click)="open($event, row)">
+        <td>
+          <button type="button" class="score" [class]="'score score--' + scoreTone(row.score)" [attr.aria-label]="'Score ' + row.score + ', show how it was calculated'" (click)="openDetails(row)">
+            <span class="score__value tabular">{{ row.score }}</span>
+            <span class="score__bar" aria-hidden="true"><span [style.width.%]="row.score"></span></span>
+          </button>
+        </td>
+        <td>
+          <a class="cell-link cell-truncate" [routerLink]="['/reports', row.lostReportId]" [title]="row.lostReportTitle">{{ row.lostReportTitle }}</a>
+          @if (row.lostReportStatus !== activeStatus) {
+            <app-status [value]="reportStatus[row.lostReportStatus]" />
+          }
+        </td>
+        <td>
+          <a class="cell-link cell-truncate" [routerLink]="['/reports', row.foundReportId]" [title]="row.foundReportTitle">{{ row.foundReportTitle }}</a>
+          @if (row.foundReportStatus !== activeStatus) {
+            <app-status [value]="reportStatus[row.foundReportStatus]" />
+          }
+        </td>
+        <td class="text-end tabular">{{ row.distanceKm | number: '1.1-1' }} km</td>
+        <td class="text-end tabular">{{ row.timeGapDays }} d</td>
+        <td class="text-end tabular">{{ row.textSimilarity * 100 | number: '1.0-0' }}%</td>
+        <td class="cell-muted" [title]="row.createdAt | date: 'd MMM y, HH:mm'">{{ row.createdAt | relativeTime }}</td>
       </tr>
     </ng-template>
-    <ng-template dataTableRowTemplate let-row="row">
-      <tr class="match-row" (click)="openDetails(row)">
-        <td>{{ row.id }}</td>
-        <td>
-          <a [routerLink]="['/reports', row.lostReportId]" (click)="$event.stopPropagation()">
-            <i class="fa-solid fa-list me-1"></i>{{ row.lostReportTitle }}
-          </a>
-          @if (row.lostReportStatus !== 'ACTIVE') {
-            <span class="badge bg-secondary ms-1">{{ row.lostReportStatus }}</span>
-          }
-        </td>
-        <td>
-          <a [routerLink]="['/reports', row.foundReportId]" (click)="$event.stopPropagation()">
-            <i class="fa-solid fa-list me-1"></i>{{ row.foundReportTitle }}
-          </a>
-          @if (row.foundReportStatus !== 'ACTIVE') {
-            <span class="badge bg-secondary ms-1">{{ row.foundReportStatus }}</span>
-          }
-        </td>
-        <td>
-          <span
-            class="badge"
-            [class.bg-success]="row.score >= 80"
-            [class.bg-warning]="row.score < 80"
-          >
-            {{ row.score }}
-          </span>
-        </td>
-        <td class="text-muted small">
-          {{ row.distanceKm | number: '1.1-1' }} km ({{ row.distanceScore }}) ·
-          {{ row.timeGapDays }}d ({{ row.timeScore }}) ·
-          text {{ row.textSimilarity | number: '1.2-2' }} ({{ row.textScore }})
-        </td>
-        <td>
-          @if (dismissalLabel(row); as label) {
-            <span class="badge bg-secondary">{{ label }}</span>
-          } @else {
-            <span class="text-muted small">—</span>
-          }
-        </td>
-        <td>{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-      </tr>
+    <ng-template appTableEmpty>
+      <p class="mb-0 text-center fw-semibold">No matches at this score</p>
     </ng-template>
   </app-data-table>
-
-  @if (totalPages() > 1) {
-    <div class="d-flex align-items-center justify-content-end gap-3 mt-3">
-      <span class="text-muted small">
-        Page {{ page() + 1 }} of {{ totalPages() }} · {{ totalElements() }} total
-      </span>
-      <div class="btn-group">
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-secondary"
-          [disabled]="page() === 0"
-          (click)="previousPage()"
-        >
-          <i class="fa-solid fa-chevron-left"></i>
-        </button>
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-secondary"
-          [disabled]="page() + 1 >= totalPages()"
-          (click)="nextPage()"
-        >
-          <i class="fa-solid fa-chevron-right"></i>
-        </button>
-      </div>
-    </div>
-  }
-}
+</div>

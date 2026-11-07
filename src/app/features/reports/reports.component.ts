@@ -1,116 +1,94 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  inject,
-  OnInit,
-  signal,
-} from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AdminReportListDto, CityDto } from '@lost-and-found/api';
-import { mapReportDetailsToListItem } from './reports.utils';
-import { tap, catchError, switchMap, EMPTY, Subject } from 'rxjs';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { DatePipe } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
+import { catchError, of } from 'rxjs';
+import { AdminReportListDto, ReportStatus, ReportType } from '@lost-and-found/api';
 import { ReportsApiService } from '../../core/api/reports-api.service';
 import { CitiesApiService } from '../../core/api/cities-api.service';
 import { ModalService } from '../../shared/services/modal/modal.service';
 import { AddReportComponent } from './add-report/add-report.component';
-import {
-  DataTableComponent,
-  DataTableHeaderTemplateDirective,
-  DataTableRowTemplateDirective,
-} from '../../shared/components/data-table/data-table.component';
-import { DataTableSkeletonComponent } from '../../shared/components/data-table-skeleton/data-table-skeleton.component';
-import { DatePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { NgSelectModule } from '@ng-select/ng-select';
-import { RouterLink } from '@angular/router';
+import { DataTableComponent, TableColumn, TableEmptyDirective, TableRowDirective } from '../../shared/components/data-table/data-table.component';
+import { SelectComponent } from '../../shared/components/select/select.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { SearchInputComponent } from '../../shared/components/search-input/search-input.component';
+import { StatusBadgeComponent } from '../../shared/ui/status-badge.component';
+import { REPORT_STATUS, REPORT_TYPE, enumOptions } from '../../shared/ui/status';
+import { RelativeTimePipe } from '../../shared/pipes/relative-time.pipe';
+import { createListQuery } from '../../shared/data/list-query';
+import { createPagedLoader } from '../../shared/data/paged-loader';
+import { isInteractiveTarget } from '../../shared/utils/row-navigation';
+
+const FILTERS = ['search', 'type', 'status', 'cityId', 'ownerId'] as const;
 
 @Component({
   selector: 'app-reports',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    SelectComponent,
     DataTableComponent,
-    DataTableHeaderTemplateDirective,
-    DataTableRowTemplateDirective,
-    DataTableSkeletonComponent,
+    TableRowDirective,
+    TableEmptyDirective,
+    PageHeaderComponent,
+    SearchInputComponent,
+    StatusBadgeComponent,
+    RelativeTimePipe,
     DatePipe,
-    FormsModule,
-    NgSelectModule,
     RouterLink,
   ],
   templateUrl: './reports.component.html',
-  styleUrl: './reports.component.scss',
 })
-export default class ReportsComponent implements OnInit {
-  private reportsApi = inject(ReportsApiService);
-  private citiesApi = inject(CitiesApiService);
-  private modalService = inject(ModalService);
-  private destroyRef = inject(DestroyRef);
+export default class ReportsComponent {
+  private readonly reportsApi = inject(ReportsApiService);
+  private readonly modalService = inject(ModalService);
+  private readonly router = inject(Router);
 
-  // Ucitavanje ide kroz jedan tok sa switchMap-om, a ne direktnim pozivom po promeni filtera:
-  // dve brze promene grada inace znace dva zahteva u letu, pa sporiji raniji odgovor stigne
-  // posle novijeg i prepise listu podacima za grad koji vise nije izabran.
-  private loadTrigger = new Subject<void>();
+  protected readonly query = createListQuery({ filters: FILTERS, defaultSort: 'createdAt', defaultDirection: 'desc' });
+  protected readonly loader = createPagedLoader(this.query.state, (state) =>
+    this.reportsApi.getReports({
+      page: state.page,
+      size: state.size,
+      sort: state.sort,
+      direction: state.direction,
+      search: state.filters.search,
+      type: state.filters.type as ReportType | undefined,
+      status: state.filters.status as ReportStatus | undefined,
+      cityId: state.filters.cityId ? Number(state.filters.cityId) : undefined,
+      ownerId: state.filters.ownerId ? Number(state.filters.ownerId) : undefined,
+    }),
+  );
 
-  reports = signal<AdminReportListDto[]>([]);
-  cities = signal<CityDto[]>([]);
-  selectedCityId = signal<number | null>(null);
-  loading = signal(true);
+  protected readonly cities = toSignal(inject(CitiesApiService).getCities().pipe(catchError(() => of([]))), { initialValue: [] });
+  protected readonly cityOptions = computed(() => this.cities().map((city) => ({ value: String(city.id), label: city.name })));
+  protected readonly typeOptions = enumOptions(REPORT_TYPE);
+  protected readonly statusOptions = enumOptions(REPORT_STATUS).filter((option) => option.value !== ReportStatus.DELETED);
+  protected readonly reportStatus = REPORT_STATUS;
+  protected readonly reportType = REPORT_TYPE;
+  protected readonly filtered = computed(() => this.query.activeFilterCount() > 0);
 
-  ngOnInit(): void {
-    this.citiesApi
-      .getCities()
-      .pipe(
-        tap((cities) => this.cities.set(cities)),
-        catchError(() => EMPTY),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe();
+  protected readonly columns: TableColumn[] = [
+    { key: 'id', label: 'ID', sortKey: 'id', width: '72px' },
+    { key: 'title', label: 'Title', sortKey: 'title' },
+    { key: 'type', label: 'Type', sortKey: 'type', width: '90px' },
+    { key: 'status', label: 'Status', sortKey: 'status', width: '110px' },
+    { key: 'category', label: 'Category', width: '140px' },
+    { key: 'city', label: 'City', width: '120px' },
+    { key: 'owner', label: 'Owner', width: '180px' },
+    { key: 'createdAt', label: 'Posted', sortKey: 'createdAt', width: '130px' },
+  ];
 
-    this.loadTrigger
-      .pipe(
-        tap(() => this.loading.set(true)),
-        switchMap(() =>
-          this.reportsApi
-            .getReports(undefined, undefined, this.selectedCityId() ?? undefined)
-            .pipe(
-              tap((reports) => {
-                this.reports.set(reports);
-                this.loading.set(false);
-              }),
-              catchError(() => {
-                this.loading.set(false);
-                return EMPTY;
-              }),
-            ),
-        ),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe();
-
-    this.loadTrigger.next();
+  protected openRow(event: Event, report: AdminReportListDto): void {
+    if (!isInteractiveTarget(event)) {
+      this.router.navigate(['/reports', report.id]);
+    }
   }
 
-  // Admin nema sopstveni grad — bez izabranog vidi sve gradove odjednom, sto je i smisao
-  // moderacije. Filter je pomoc pri pregledu, ne granica vidljivosti.
-  onCityChange(cityId: number | null): void {
-    this.selectedCityId.set(cityId ?? null);
-    this.loadTrigger.next();
-  }
-
-  reloadReports(): void {
-    this.loadTrigger.next();
-  }
-
-  addNewReport(): void {
+  protected addReport(): void {
     const modalRef = this.modalService.openRightModal(AddReportComponent);
-    const addReportComponent = modalRef.content as AddReportComponent;
-
-    addReportComponent.onAdd
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((report) => {
-        modalRef.hide();
-        this.reports.update((reports) => [mapReportDetailsToListItem(report), ...reports]);
-      });
+    const component = modalRef.content as AddReportComponent;
+    component.onAdd.subscribe(() => {
+      modalRef.hide();
+      this.loader.reload();
+    });
   }
 }

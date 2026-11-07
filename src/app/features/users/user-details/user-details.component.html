@@ -1,132 +1,119 @@
-@if (loading()) {
-  <app-details-skeleton />
-} @else if (error()) {
-  <app-error-state
-    title="Unable to load user"
-    message="The user could not be loaded. It may not exist or the server is unreachable."
-    retryText="Retry"
-    (retry)="retryLoad()"
-  />
-} @else if (user()) {
-  <div class="d-flex align-items-center mb-4">
-    <a routerLink="/users" class="btn btn-sm btn-link text-secondary me-2">
-      <i class="fa-solid fa-arrow-left"></i>
-    </a>
-    <h4 class="fw-bold mb-0">{{ user()!.firstName }} {{ user()!.lastName }}</h4>
-    <button
-      type="button"
-      class="btn btn-sm btn-outline-secondary ms-3"
-      (click)="shareLink()"
-      [attr.aria-label]="linkCopied() ? 'Link copied' : 'Copy link'"
-    >
-      @if (linkCopied()) {
-        <i class="fa-solid fa-check me-1"></i>Copied
-      } @else {
-        <i class="fa-solid fa-share-nodes me-1"></i>Share
+<div class="page">
+  @if (loadError(); as error) {
+    <app-page-header title="User" backLink="/users" backLabel="Users" />
+    <div class="panel"><app-error-state [title]="error.title" [message]="error.detail ?? ''" (retry)="user.reload()" /></div>
+  } @else if (user.value(); as current) {
+    <app-page-header [title]="fullName()" [description]="current.email + ' · joined ' + (current.createdAt | date: 'd MMM y')" backLink="/users" backLabel="Users">
+      <ng-container headerMeta>
+        <app-status [value]="userStatus[current.status]" />
+        @if (current.role !== roles.USER) {
+          <app-status [value]="userRole[current.role]" />
+        }
+      </ng-container>
+      @if (canModerate()) {
+        @if (isRestricted()) {
+          <button type="button" class="btn btn-secondary" [disabled]="moderation.working()" (click)="unblock(current)">Lift restrictions</button>
+        } @else {
+          <button type="button" class="btn btn-secondary" [disabled]="moderation.working()" (click)="restrict(current)">Restrict</button>
+          <button type="button" class="btn btn-danger" [disabled]="moderation.working()" (click)="block(current)">Block</button>
+        }
       }
-    </button>
-    @if (user()!.status === 'ACTIVE' && user()!.role !== 'ADMIN') {
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-warning ms-2"
-        (click)="partialBlockUser()"
-        [disabled]="moderating()"
-      >
-        <i class="fa-solid fa-user-lock me-1"></i>Restrict
+      <button type="button" class="btn btn-secondary btn-icon" aria-label="More actions" [cdkMenuTriggerFor]="moreMenu">
+        <i class="fa-solid fa-ellipsis" aria-hidden="true"></i>
       </button>
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-danger ms-2"
-        (click)="blockUser()"
-        [disabled]="moderating()"
-      >
-        <i class="fa-solid fa-ban me-1"></i>Block
-      </button>
-    } @else if (user()!.status === 'BLOCKED' || user()!.status === 'PARTIALLY_BLOCKED') {
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-success ms-2"
-        (click)="unblockUser()"
-        [disabled]="moderating()"
-      >
-        <i class="fa-solid fa-unlock me-1"></i>Unblock
-      </button>
-    }
-    @if (user()!.status !== 'DELETED') {
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-danger ms-2"
-        (click)="deleteUser()"
-        [disabled]="deleting()"
-      >
-        <i class="fa-solid fa-trash me-1"></i>Delete account
-      </button>
-    }
-  </div>
-
-  <div class="row g-3">
-    <div class="col-md-8">
-      <div class="card">
-        <div class="card-body">
-          <h6 class="text-muted text-uppercase small mb-3">Details</h6>
-
-          <div class="row mb-2">
-            <div class="col-4 text-muted">Username</div>
-            <div class="col-8">{{ user()!.username }}</div>
-          </div>
-
-          <div class="row mb-2">
-            <div class="col-4 text-muted">First name</div>
-            <div class="col-8">{{ user()!.firstName || '-' }}</div>
-          </div>
-
-          <div class="row mb-2">
-            <div class="col-4 text-muted">Last name</div>
-            <div class="col-8">{{ user()!.lastName || '-' }}</div>
-          </div>
-
-          <div class="row mb-2">
-            <div class="col-4 text-muted">Role</div>
-            <div class="col-8">
-              <span class="badge bg-secondary">{{ user()!.role }}</span>
-            </div>
-          </div>
-
-          <div class="row mb-2">
-            <div class="col-4 text-muted">Status</div>
-            <div class="col-8">
-              <span class="badge"
-                [class.bg-success]="user()!.status === 'ACTIVE'"
-                [class.bg-danger]="user()!.status === 'BLOCKED'"
-                [class.bg-warning]="user()!.status === 'PARTIALLY_BLOCKED'"
-                [class.bg-dark]="user()!.status === 'DELETED'">
-                {{ user()!.status }}
-              </span>
-            </div>
-          </div>
-
-          <div class="row mb-2">
-            <div class="col-4 text-muted">Created</div>
-            <div class="col-8">{{ user()!.createdAt | date: 'dd.MM.yyyy HH:mm' }}</div>
-          </div>
+      <ng-template #moreMenu>
+        <div class="menu" cdkMenu>
+          <button type="button" class="menu__item" cdkMenuItem (cdkMenuItemTriggered)="copy(current.email, 'Email')">Copy email</button>
+          <a class="menu__item" cdkMenuItem routerLink="/audit-log" [queryParams]="{ targetType: auditTarget, targetId: current.id }">Open in audit log</a>
+          @if (current.status !== statuses.DELETED) {
+            <button type="button" class="menu__item" cdkMenuItem [disabled]="!current.activeSessions" (cdkMenuItemTriggered)="revokeSessions(current)">Sign out everywhere</button>
+          }
+          @if (canModerate()) {
+            <button type="button" class="menu__item menu__item--danger" cdkMenuItem (cdkMenuItemTriggered)="deleteAccount(current)">Delete account…</button>
+          }
         </div>
-      </div>
-    </div>
+      </ng-template>
+    </app-page-header>
 
-    <div class="col-md-4">
-      <div class="card">
-        <div class="card-body">
-          <h6 class="text-muted text-uppercase small mb-3">Contact</h6>
-          <div class="mb-2">
-            <small class="text-muted d-block">Email</small>
-            <span>{{ user()!.email || '-' }}</span>
-          </div>
-          <div>
-            <small class="text-muted d-block">Phone</small>
-            <span>{{ user()!.phoneNumber || '-' }}</span>
-          </div>
-        </div>
+    <div class="detail-layout">
+      <div class="detail-layout__main">
+        <section class="panel" aria-labelledby="reports-heading">
+          <header class="panel__header">
+            <h2 id="reports-heading">Reports <span class="cell-muted tabular">{{ reports.total() }}</span></h2>
+            @if (reports.total() > reports.rows().length) {
+              <a class="btn btn-ghost btn-sm" routerLink="/reports" [queryParams]="{ ownerId: current.id }">View all</a>
+            }
+          </header>
+          @if (reports.rows().length) {
+            <table class="table">
+              <caption class="visually-hidden">Latest reports</caption>
+              <tbody>
+                @for (report of reports.rows(); track report.id) {
+                  <tr>
+                    <td><a class="cell-link cell-truncate" [routerLink]="['/reports', report.id]">{{ report.title }}</a></td>
+                    <td class="col-type"><app-status [value]="reportType[report.type]" /></td>
+                    <td class="col-status"><app-status [value]="reportStatus[report.status]" /></td>
+                    <td class="col-time cell-muted text-end">{{ report.createdAt | relativeTime }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+          <app-panel-state [loaded]="reports.loaded()" [empty]="!reports.rows().length" [error]="reports.error()" emptyText="No reports." (retry)="reports.reload()" />
+        </section>
+
+        <section class="panel" aria-labelledby="claims-heading">
+          <header class="panel__header">
+            <h2 id="claims-heading">Ownership claims <span class="cell-muted tabular">{{ claims.total() }}</span></h2>
+          </header>
+          @if (claims.rows().length) {
+            <table class="table">
+              <caption class="visually-hidden">Latest claims</caption>
+              <tbody>
+                @for (claim of claims.rows(); track claim.id) {
+                  <tr>
+                    <td><a class="cell-link cell-truncate" [routerLink]="['/reports', claim.reportId]">{{ claim.reportTitle }}</a></td>
+                    <td class="col-status"><app-status [value]="claimStatus[claim.status]" /></td>
+                    <td class="col-time cell-muted text-end">{{ claim.submittedAt | relativeTime }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+          <app-panel-state [loaded]="claims.loaded()" [empty]="!claims.rows().length" [error]="claims.error()" emptyText="No claims." (retry)="claims.reload()" />
+        </section>
+
+        <app-complaints-panel heading="Complaints about this user" [userId]="id()" />
       </div>
+
+      <aside class="detail-layout__side">
+        <section class="panel" aria-labelledby="profile-heading">
+          <header class="panel__header"><h2 id="profile-heading">Profile</h2></header>
+          <dl class="definition-list panel__body">
+            <dt>ID</dt>
+            <dd class="mono">{{ current.id }}</dd>
+            <dt>Username</dt>
+            <dd>{{ current.username }}</dd>
+            <dt>Email</dt>
+            <dd>{{ current.email }}</dd>
+            <dt>Phone</dt>
+            <dd class="tabular">{{ current.phoneNumber || '—' }}</dd>
+            <dt>City</dt>
+            <dd>{{ current.activeCityName || '—' }}</dd>
+            <dt>Language</dt>
+            <dd>{{ languages[current.language] }}</dd>
+            <dt>Sign-in</dt>
+            <dd>{{ current.googleLinked ? 'Google' : 'Email and password' }}</dd>
+            <dt>Sessions</dt>
+            <dd class="tabular">{{ current.activeSessions === 0 ? 'Signed out' : current.activeSessions + (current.activeSessions === 1 ? ' device' : ' devices') }}</dd>
+          </dl>
+        </section>
+
+        <app-moderation-history [targetType]="auditTarget" [targetId]="id()" emptyText="No moderator has acted on this account." />
+      </aside>
     </div>
-  </div>
-}
+  } @else {
+    <span class="skeleton skeleton--title"></span>
+    <span class="skeleton skeleton--block"></span>
+  }
+</div>

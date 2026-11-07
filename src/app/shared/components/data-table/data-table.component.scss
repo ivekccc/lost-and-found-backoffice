@@ -1,5 +1,120 @@
-.data-table-container {
-  overflow: auto;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.table-panel {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background-color: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+
+  &__scroll {
+    position: relative;
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  &__footer {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--app-space-3);
+    min-height: 44px;
+    padding: 0 var(--app-space-3);
+    border-top: 1px solid var(--app-border);
+  }
+
+  &__range {
+    margin: 0;
+    font-size: var(--app-text-sm);
+    color: var(--app-text-secondary);
+  }
+
+  &__pager {
+    display: flex;
+    align-items: center;
+    gap: var(--app-space-2);
+  }
+
+  &__size {
+    display: flex;
+    align-items: center;
+    gap: var(--app-space-2);
+    margin: 0;
+    font-size: var(--app-text-sm);
+    color: var(--app-text-secondary);
+
+  }
+}
+
+.data-table {
+  transition: opacity var(--app-duration-fast) var(--app-ease-out);
+
+  > caption {
+    position: absolute !important;
+  }
+
+  &--stale {
+    opacity: 0.55;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  &__select {
+    width: 40px;
+  }
+
+  &__sort {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+
+    &:hover {
+      color: var(--app-text);
+    }
+
+    &--active {
+      color: var(--app-text);
+    }
+  }
+
+  &__sort-icon {
+    font-size: 10px;
+    opacity: 0;
+    transition: opacity var(--app-duration-instant) var(--app-ease-out);
+  }
+
+  &__sort:hover &__sort-icon,
+  &__sort--active &__sort-icon {
+    opacity: 1;
+  }
+
+  &__state {
+    height: auto !important;
+    padding: var(--app-space-6) var(--app-space-4) !important;
+  }
+
+  &__empty {
+    margin: 0;
+    color: var(--app-text-muted);
+    text-align: center;
+  }
 }

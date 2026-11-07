@@ -1,41 +1,128 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;
-  width: 250px;
-  height: 100vh;
-  padding: 1rem;
-  background-color: #212529;
-  color: #fff;
+  gap: var(--app-space-4);
+  width: var(--app-sidebar-width);
+  height: 100%;
+  padding: var(--app-space-3) var(--app-space-2) var(--app-space-4);
+  overflow-y: auto;
+  background-color: var(--app-sidebar);
+  border-right: 1px solid var(--app-border);
 
-  &__title {
-    margin-bottom: 1.5rem;
-    padding: 0 0.5rem;
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--app-space-2);
+    height: 36px;
+    padding: 0 var(--app-space-2);
+    color: var(--app-text);
+    text-decoration: none;
+    border-radius: var(--app-radius);
+
+    &:hover {
+      background-color: var(--app-surface-hover);
+    }
   }
 
-  ul {
-    margin-top: 15vh;
+  &__mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--app-on-accent);
+    background-color: var(--app-accent);
+    border-radius: var(--app-radius-sm);
   }
-}
 
-.nav-link {
-  display: flex;
-  align-items: center;
-  color: rgba(255, 255, 255, 0.75);
-  border-radius: 6px;
+  &__name {
+    font-weight: 600;
+  }
 
-  i {
-    width: 20px;
-    margin-right: 0.5rem;
+  &__scope {
+    color: var(--app-text-muted);
+  }
+
+  &__group-label {
+    margin: 0 0 var(--app-space-1);
+    padding: 0 var(--app-space-2);
+    font-size: var(--app-text-xs);
+    font-weight: 500;
+    color: var(--app-text-muted);
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: var(--app-space-2);
+    height: 32px;
+    padding: 0 var(--app-space-2);
+    font-weight: 500;
+    color: var(--app-text-secondary);
+    text-decoration: none;
+    border-radius: var(--app-radius);
+    transition:
+      background-color var(--app-duration-instant) var(--app-ease-out),
+      color var(--app-duration-instant) var(--app-ease-out);
+
+    &:hover {
+      color: var(--app-text);
+      background-color: var(--app-surface-hover);
+    }
+
+    &--active,
+    &--active:hover {
+      color: var(--app-text);
+      background-color: var(--app-surface);
+      box-shadow: inset 0 0 0 1px var(--app-border);
+    }
+
+    &--active .sidebar__icon {
+      color: var(--app-accent);
+    }
+  }
+
+  &__icon {
+    width: 16px;
+    font-size: 13px;
     text-align: center;
+    color: var(--app-text-muted);
   }
 
-  &:hover {
-    color: #fff;
-    background-color: rgba(255, 255, 255, 0.05);
+  &__label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  &.active {
-    color: #fff;
-    background-color: rgba(255, 255, 255, 0.1);
+  &__count {
+    min-width: 20px;
+    padding: 0 6px;
+    font-size: var(--app-text-xs);
+    font-weight: 600;
+    line-height: 18px;
+    text-align: center;
+    color: var(--app-accent-text);
+    background-color: var(--app-accent-soft);
+    border-radius: var(--app-radius-sm);
   }
 }

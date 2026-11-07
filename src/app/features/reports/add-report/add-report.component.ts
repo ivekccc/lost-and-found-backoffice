@@ -36,8 +36,6 @@ export class AddReportComponent implements OnInit {
 
   categories = signal<ReportCategoryDto[]>([]);
 
-  // Lokacija je obavezna otkad postoji vise gradova: bez nje oglas nema zonu pa ni grad,
-  // ne ulazi u pretragu ni u matching, i server ga odbija sa 400.
   reportForm = new FormGroup({
     title: new FormControl('', [Validators.required]),
     description: new FormControl(''),
@@ -50,8 +48,6 @@ export class AddReportComponent implements OnInit {
   locationSuggestions$: Observable<AutoCompleteSuggestionDto[]> = this.locationSearch$.pipe(
     debounceTime(AUTOCOMPLETE_DEBOUNCE_MS),
     distinctUntilChanged(),
-    // switchMap, ne mergeMap: sporiji raniji odgovor ne sme da prepise noviji i vrati
-    // predloge za vec obrisan upit.
     switchMap((query) =>
       !query || query.length < AUTOCOMPLETE_MIN_LENGTH
         ? of([])

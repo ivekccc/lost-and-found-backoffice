@@ -25,6 +25,12 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
+            "stylePreprocessorOptions": {
+              "includePaths": ["node_modules"],
+              "sass": {
+                "silenceDeprecations": ["import", "global-builtin", "color-functions", "if-function"]
+              }
+            },
             "assets": [
               {
                 "glob": "**/*",
@@ -32,7 +38,10 @@
               }
             ],
             "styles": [
-              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/@fontsource/ibm-plex-sans/400.css",
+              "node_modules/@fontsource/ibm-plex-sans/500.css",
+              "node_modules/@fontsource/ibm-plex-sans/600.css",
+              "node_modules/@fontsource/ibm-plex-mono/400.css",
               "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
               "node_modules/@ng-select/ng-select/themes/default.theme.css",
               "node_modules/maplibre-gl/dist/maplibre-gl.css",
@@ -95,7 +104,10 @@
               }
             ],
             "styles": [
-              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/@fontsource/ibm-plex-sans/400.css",
+              "node_modules/@fontsource/ibm-plex-sans/500.css",
+              "node_modules/@fontsource/ibm-plex-sans/600.css",
+              "node_modules/@fontsource/ibm-plex-mono/400.css",
               "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
               "src/styles.scss"
             ],

@@ -1,9 +1,63 @@
 <header class="header">
+  <button type="button" class="btn btn-ghost btn-icon header__menu" aria-label="Navigation" aria-controls="main-navigation" [attr.aria-expanded]="navigationOpen()" (click)="toggleNavigation.emit()">
+    <i class="fa-solid fa-bars" aria-hidden="true"></i>
+  </button>
+
+  <button type="button" class="header__search" aria-label="Search or jump to" aria-keyshortcuts="Control+K Meta+K" (click)="commandPalette.open()">
+    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+    <span class="header__search-label">Search or jump to…</span>
+    <span class="header__search-keys" aria-hidden="true">
+      <kbd class="kbd">{{ isMac ? '⌘' : 'Ctrl' }}</kbd><kbd class="kbd">K</kbd>
+    </span>
+  </button>
+
   <div class="header__actions">
-    @if (user()) {
-      <span class="header__user">{{ fullName() }}</span>
-      <span class="badge bg-primary">{{ user()!.role }}</span>
-    }
-    <button class="btn btn-outline-secondary btn-sm" (click)="logout()">Logout</button>
+    <button
+      type="button"
+      class="btn btn-ghost btn-icon"
+      aria-label="Theme"
+      [cdkMenuTriggerFor]="themeMenu"
+    >
+      <i class="fa-solid" [class]="themeService.resolved() === 'dark' ? 'fa-moon' : 'fa-sun'" aria-hidden="true"></i>
+    </button>
+
+    <button type="button" class="header__user" [cdkMenuTriggerFor]="userMenu" [attr.aria-label]="fullName() + ', account menu'">
+      <span class="header__avatar" aria-hidden="true">{{ initials() }}</span>
+      <span class="header__user-name">{{ fullName() }}</span>
+      <i class="fa-solid fa-chevron-down header__chevron" aria-hidden="true"></i>
+    </button>
   </div>
 </header>
+
+<ng-template #themeMenu>
+  <div class="menu" cdkMenu>
+    <p class="menu__label">Appearance</p>
+    @for (option of themeOptions; track option.value) {
+      <button
+        type="button"
+        class="menu__item"
+        cdkMenuItemRadio
+        [cdkMenuItemChecked]="themeService.preference() === option.value"
+        (cdkMenuItemTriggered)="setTheme(option.value)"
+      >
+        <span>{{ option.label }}</span>
+        @if (themeService.preference() === option.value) {
+          <i class="fa-solid fa-check menu__check" aria-hidden="true"></i>
+        }
+      </button>
+    }
+  </div>
+</ng-template>
+
+<ng-template #userMenu>
+  <div class="menu" cdkMenu>
+    <div class="menu__header">
+      <p class="menu__title">{{ fullName() }}</p>
+      <p class="menu__subtitle">{{ user()?.email }}</p>
+    </div>
+    <button type="button" class="menu__item" cdkMenuItem (cdkMenuItemTriggered)="signOut()">
+      <i class="fa-solid fa-arrow-right-from-bracket menu__icon" aria-hidden="true"></i>
+      <span>Sign out</span>
+    </button>
+  </div>
+</ng-template>

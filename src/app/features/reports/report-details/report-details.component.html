@@ -1,162 +1,112 @@
-@if (loading()) {
-  <app-details-skeleton />
-} @else if (error()) {
-  <app-error-state
-    title="Unable to load report"
-    message="The report could not be loaded. It may not exist or the server is unreachable."
-    retryText="Retry"
-    (retry)="retryLoad()"
-  />
-} @else if (report()) {
-  <div class="d-flex align-items-center mb-4">
-    <a routerLink="/reports" class="btn btn-sm btn-link text-secondary me-2">
-      <i class="fa-solid fa-arrow-left"></i>
-    </a>
-    <h4 class="fw-bold mb-0">{{ report()!.title }}</h4>
-    <button
-      type="button"
-      class="btn btn-sm btn-outline-secondary ms-3"
-      (click)="shareLink()"
-      [attr.aria-label]="linkCopied() ? 'Link copied' : 'Copy link'"
+<div class="page">
+  @if (loadError(); as error) {
+    <app-page-header title="Report" backLink="/reports" backLabel="Reports" />
+    <div class="panel"><app-error-state [title]="error.title" [message]="error.detail ?? ''" (retry)="report.reload()" /></div>
+  } @else if (report.value(); as current) {
+    <app-page-header
+      [title]="current.title"
+      [description]="'#' + current.id + ' · ' + current.categoryName + ' · posted ' + (current.createdAt | date: 'd MMM y, HH:mm')"
+      backLink="/reports"
+      backLabel="Reports"
     >
-      @if (linkCopied()) {
-        <i class="fa-solid fa-check me-1"></i>Copied
-      } @else {
-        <i class="fa-solid fa-share-nodes me-1"></i>Share
+      <ng-container headerMeta>
+        <app-status [value]="reportType[current.type]" />
+        <app-status [value]="reportStatus[current.status]" />
+      </ng-container>
+      @if (isHidden()) {
+        <button type="button" class="btn btn-secondary" [disabled]="moderation.working()" (click)="restore(current)">Restore</button>
+      } @else if (current.status !== statuses.DELETED) {
+        <button type="button" class="btn btn-danger" [disabled]="moderation.working()" (click)="hide(current)">Hide</button>
       }
-    </button>
-    @if (report()!.status === 'FLAGGED') {
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-success ms-2"
-        (click)="unflagReport()"
-        [disabled]="moderating()"
-      >
-        <i class="fa-solid fa-eye me-1"></i>Unflag
+      <button type="button" class="btn btn-secondary btn-icon" aria-label="More actions" [cdkMenuTriggerFor]="moreMenu">
+        <i class="fa-solid fa-ellipsis" aria-hidden="true"></i>
       </button>
-    } @else if (report()!.status !== 'DELETED') {
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-danger ms-2"
-        (click)="flagReport()"
-        [disabled]="moderating()"
-      >
-        <i class="fa-solid fa-flag me-1"></i>Flag
-      </button>
-    }
-  </div>
-
-  <div class="row g-3">
-    <div class="col-md-8">
-      <div class="card">
-        <div class="card-body">
-          <h6 class="text-muted text-uppercase small mb-3">Details</h6>
-
-          <div class="row mb-2">
-            <div class="col-4 text-muted">Type</div>
-            <div class="col-8">
-              <span class="badge"
-                [class.bg-danger]="report()!.type === 'LOST'"
-                [class.bg-success]="report()!.type === 'FOUND'">
-                {{ report()!.type }}
-              </span>
-            </div>
-          </div>
-
-          <div class="row mb-2">
-            <div class="col-4 text-muted">Category</div>
-            <div class="col-8">{{ report()!.categoryName }}</div>
-          </div>
-
-          <div class="row mb-2">
-            <div class="col-4 text-muted">Status</div>
-            <div class="col-8">
-              <span class="badge bg-secondary">{{ report()!.status }}</span>
-            </div>
-          </div>
-
-          <div class="row mb-2">
-            <div class="col-4 text-muted">Created</div>
-            <div class="col-8">{{ report()!.createdAt | date: 'dd.MM.yyyy HH:mm' }}</div>
-          </div>
-
-          @if (report()!.expiresAt) {
-            <div class="row mb-2">
-              <div class="col-4 text-muted">Expires</div>
-              <div class="col-8">{{ report()!.expiresAt | date: 'dd.MM.yyyy HH:mm' }}</div>
-            </div>
-          }
-
-          @if (report()!.rewardAmount != null) {
-            <div class="row mb-2">
-              <div class="col-4 text-muted">Reward</div>
-              <div class="col-8">{{ report()!.rewardAmount | number: '1.0-0' }} RSD</div>
-            </div>
-          }
-
-          @if (report()!.description) {
-            <hr />
-            <h6 class="text-muted text-uppercase small mb-2">Description</h6>
-            <p class="mb-0">{{ report()!.description }}</p>
-          }
+      <ng-template #moreMenu>
+        <div class="menu" cdkMenu>
+          <button type="button" class="menu__item" cdkMenuItem (cdkMenuItemTriggered)="copyLink()">Copy link</button>
+          <a class="menu__item" cdkMenuItem [routerLink]="['/users', current.userId]">Open owner</a>
+          <a class="menu__item" cdkMenuItem routerLink="/audit-log" [queryParams]="{ targetType: auditTarget, targetId: current.id }">Open in audit log</a>
         </div>
-      </div>
+      </ng-template>
+    </app-page-header>
 
-      @if (report()!.images && report()!.images!.length > 0) {
-        <div class="card mt-3">
-          <div class="card-body">
-            <h6 class="text-muted text-uppercase small mb-3">Images</h6>
-            <app-image-gallery [images]="report()!.images!" />
-          </div>
-        </div>
-      }
+    <div class="detail-layout">
+      <div class="detail-layout__main">
+        <section class="panel" aria-labelledby="description-heading">
+          <header class="panel__header"><h2 id="description-heading">Description</h2></header>
+          <p class="panel__body mb-0 description">{{ current.description || 'No description.' }}</p>
+        </section>
 
-      @if (report()!.location; as location) {
-        @if (location.latitude && location.longitude) {
-          <div class="card mt-3">
-            <div class="card-body">
-              <h6 class="text-muted text-uppercase small mb-3">Location</h6>
-              <div class="mb-3">{{ location.formattedAddress || '-' }}</div>
-              <div style="height: 350px;">
-                <app-map-view
-                  [latitude]="location.latitude"
-                  [longitude]="location.longitude"
-                />
+        @if (current.images?.length) {
+          <section class="panel" aria-labelledby="photos-heading">
+            <header class="panel__header"><h2 id="photos-heading">Photos <span class="cell-muted tabular">{{ current.images!.length }}</span></h2></header>
+            <div class="panel__body"><app-image-gallery [images]="current.images!" /></div>
+          </section>
+        }
+
+        @if (current.location?.latitude && current.location?.longitude) {
+          <section class="panel" aria-labelledby="location-heading">
+            <header class="panel__header">
+              <h2 id="location-heading">Exact location</h2>
+              <span class="cell-muted">Only the owner and approved claimants see this</span>
+            </header>
+            <div class="panel__body">
+              <p class="mb-3">{{ current.location!.formattedAddress || '—' }}</p>
+              <div class="map-frame">
+                <app-map-view [latitude]="current.location!.latitude!" [longitude]="current.location!.longitude!" />
               </div>
             </div>
-          </div>
+          </section>
         }
-      }
-    </div>
 
-    <div class="col-md-4">
-      <div class="card">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="text-muted text-uppercase small mb-0">Contact</h6>
-            <a
-              [routerLink]="['/users', report()!.userId]"
-              class="text-secondary"
-              aria-label="View user profile"
-            >
-              <i class="fa-solid fa-up-right-from-square"></i>
-            </a>
-          </div>
-          <div class="mb-2">
-            <small class="text-muted d-block">Name</small>
-            <span>{{ report()!.userFullName || '-' }}</span>
-          </div>
-          <div class="mb-2">
-            <small class="text-muted d-block">Email</small>
-            <span>{{ report()!.contactEmail || '-' }}</span>
-          </div>
-          <div>
-            <small class="text-muted d-block">Phone</small>
-            <span>{{ report()!.contactPhone || '-' }}</span>
-          </div>
-        </div>
+        <section class="panel" aria-labelledby="claims-heading">
+          <header class="panel__header"><h2 id="claims-heading">Ownership claims <span class="cell-muted tabular">{{ claims.total() }}</span></h2></header>
+          @if (claims.rows().length) {
+            <table class="table">
+              <caption class="visually-hidden">Claims on this report</caption>
+              <tbody>
+                @for (claim of claims.rows(); track claim.id) {
+                  <tr>
+                    <td>{{ claim.claimantName ?? 'Deleted account' }}</td>
+                    <td class="col-status"><app-status [value]="claimStatus[claim.status]" /></td>
+                    <td class="col-time cell-muted text-end">{{ claim.submittedAt | relativeTime }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+          <app-panel-state [loaded]="claims.loaded()" [empty]="!claims.rows().length" [error]="claims.error()" emptyText="No one has claimed this item." (retry)="claims.reload()" />
+        </section>
+
+        <app-complaints-panel [reportId]="id()" />
       </div>
 
+      <aside class="detail-layout__side">
+        <section class="panel" aria-labelledby="facts-heading">
+          <header class="panel__header"><h2 id="facts-heading">Details</h2></header>
+          <dl class="definition-list panel__body">
+            <dt>Owner</dt>
+            <dd><a class="cell-link" [routerLink]="['/users', current.userId]">{{ current.userFullName || 'User #' + current.userId }}</a></dd>
+            <dt>Contact email</dt>
+            <dd>{{ current.contactEmail || '—' }}</dd>
+            <dt>Contact phone</dt>
+            <dd class="tabular">{{ current.contactPhone || '—' }}</dd>
+            @if (current.rewardAmount != null) {
+              <dt>Reward</dt>
+              <dd class="tabular">{{ current.rewardAmount | number: '1.0-0' }} RSD</dd>
+            }
+            <dt>Posted</dt>
+            <dd class="tabular">{{ current.createdAt | date: 'd MMM y, HH:mm' }}</dd>
+            <dt>Expires</dt>
+            <dd class="tabular">{{ current.expiresAt ? (current.expiresAt | date: 'd MMM y') : '—' }}</dd>
+          </dl>
+        </section>
+
+        <app-moderation-history [targetType]="auditTarget" [targetId]="id()" emptyText="No moderator has acted on this report." />
+      </aside>
     </div>
-  </div>
-}
+  } @else {
+    <span class="skeleton skeleton--title"></span>
+    <span class="skeleton skeleton--block"></span>
+  }
+</div>

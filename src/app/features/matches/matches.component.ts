@@ -1,184 +1,95 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  inject,
-  OnInit,
-  signal,
-} from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { NgSelectModule } from '@ng-select/ng-select';
-import { AdminMatchListDto, ReportMatchStatus } from '@lost-and-found/api';
-import { tap, catchError, debounceTime, switchMap, EMPTY, Subject } from 'rxjs';
+import { RouterLink } from '@angular/router';
+import { EMPTY, catchError, finalize, tap } from 'rxjs';
+import { AdminMatchListDto, ReportStatus } from '@lost-and-found/api';
 import { MatchesApiService } from '../../core/api/matches-api.service';
 import { ModalService } from '../../shared/services/modal/modal.service';
+import { ToastService } from '../../shared/services/toast.service';
 import { MatchDetailsModalComponent } from './match-details-modal/match-details-modal.component';
-import {
-  DataTableComponent,
-  DataTableHeaderTemplateDirective,
-  DataTableRowTemplateDirective,
-} from '../../shared/components/data-table/data-table.component';
-import { DataTableSkeletonComponent } from '../../shared/components/data-table-skeleton/data-table-skeleton.component';
-import { ErrorStateComponent } from '../../shared/components/error-state/error-state.component';
+import { DataTableComponent, TableColumn, TableEmptyDirective, TableRowDirective } from '../../shared/components/data-table/data-table.component';
+import { SelectComponent } from '../../shared/components/select/select.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { StatusBadgeComponent } from '../../shared/ui/status-badge.component';
+import { REPORT_STATUS } from '../../shared/ui/status';
+import { RelativeTimePipe } from '../../shared/pipes/relative-time.pipe';
+import { createListQuery } from '../../shared/data/list-query';
+import { createPagedLoader } from '../../shared/data/paged-loader';
+import { isInteractiveTarget } from '../../shared/utils/row-navigation';
 
-const PAGE_SIZE = 20;
-const MIN_SCORE_DEBOUNCE_MS = 300;
+const SCORE_OPTIONS = [40, 50, 60, 70, 80, 90].map((score) => ({ value: String(score), label: `${score} or more` }));
 
 @Component({
   selector: 'app-matches',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    FormsModule,
-    RouterLink,
+    SelectComponent,
+    DataTableComponent,
+    TableRowDirective,
+    TableEmptyDirective,
+    PageHeaderComponent,
+    StatusBadgeComponent,
+    RelativeTimePipe,
     DatePipe,
     DecimalPipe,
-    NgSelectModule,
-    DataTableComponent,
-    DataTableHeaderTemplateDirective,
-    DataTableRowTemplateDirective,
-    DataTableSkeletonComponent,
-    ErrorStateComponent,
+    RouterLink,
   ],
   templateUrl: './matches.component.html',
   styleUrl: './matches.component.scss',
 })
-export default class MatchesComponent implements OnInit {
-  private matchesApi = inject(MatchesApiService);
-  private modalService = inject(ModalService);
-  private destroyRef = inject(DestroyRef);
+export default class MatchesComponent {
+  private readonly matchesApi = inject(MatchesApiService);
+  private readonly modalService = inject(ModalService);
+  private readonly toastService = inject(ToastService);
 
-  private loadTrigger = new Subject<void>();
-  private minScoreInput = new Subject<number | null>();
+  protected readonly query = createListQuery({ filters: ['minScore'] as const, defaultSort: 'createdAt', defaultDirection: 'desc' });
+  protected readonly loader = createPagedLoader(this.query.state, (state) =>
+    this.matchesApi.getMatches({
+      page: state.page,
+      size: state.size,
+      minScore: state.filters.minScore ? Number(state.filters.minScore) : undefined,
+    }),
+  );
 
-  matches = signal<AdminMatchListDto[]>([]);
-  loading = signal(true);
-  error = signal(false);
-  detailsLoading = signal(false);
-  selectedStatus = signal<ReportMatchStatus | null>(null);
-  minScore = signal<number | null>(null);
-  page = signal(0);
-  totalPages = signal(0);
-  totalElements = signal(0);
+  protected readonly openingId = signal<number | null>(null);
+  protected readonly scoreOptions = SCORE_OPTIONS;
+  protected readonly reportStatus = REPORT_STATUS;
+  protected readonly activeStatus = ReportStatus.ACTIVE;
+  protected readonly columns: TableColumn[] = [
+    { key: 'score', label: 'Score', width: '120px' },
+    { key: 'lost', label: 'Lost report' },
+    { key: 'found', label: 'Found report' },
+    { key: 'distance', label: 'Distance', align: 'end', width: '96px' },
+    { key: 'gap', label: 'Time apart', align: 'end', width: '104px' },
+    { key: 'text', label: 'Text', align: 'end', width: '80px' },
+    { key: 'createdAt', label: 'Found', width: '120px' },
+  ];
 
-  statusOptions = [{ label: 'Suggested', value: ReportMatchStatus.SUGGESTED }];
-
-  ngOnInit(): void {
-    this.loadTrigger
-      .pipe(
-        tap(() => {
-          this.loading.set(true);
-          this.error.set(false);
-        }),
-        switchMap(() =>
-          this.matchesApi
-            .getMatches({
-              page: this.page(),
-              size: PAGE_SIZE,
-              status: this.selectedStatus() ?? undefined,
-              minScore: this.minScore() ?? undefined,
-            })
-            .pipe(
-              tap((result) => {
-                const totalPages = result.totalPages ?? 0;
-                if (this.page() > 0 && this.page() + 1 > totalPages) {
-                  this.page.set(Math.max(0, totalPages - 1));
-                  this.loadTrigger.next();
-                  return;
-                }
-                this.matches.set(result.content ?? []);
-                this.totalPages.set(totalPages);
-                this.totalElements.set(result.totalElements ?? 0);
-                this.loading.set(false);
-              }),
-              catchError(() => {
-                this.error.set(true);
-                this.loading.set(false);
-                return EMPTY;
-              }),
-            ),
-        ),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe();
-
-    this.minScoreInput
-      .pipe(debounceTime(MIN_SCORE_DEBOUNCE_MS), takeUntilDestroyed(this.destroyRef))
-      .subscribe((minScore) => {
-        this.minScore.set(minScore);
-        this.page.set(0);
-        this.loadTrigger.next();
-      });
-
-    this.loadTrigger.next();
+  protected scoreTone(score: number): string {
+    return score >= 70 ? 'high' : score >= 50 ? 'medium' : 'low';
   }
 
-  reload(): void {
-    this.loadTrigger.next();
-  }
-
-  onStatusChange(status: ReportMatchStatus | null): void {
-    this.selectedStatus.set(status ?? null);
-    this.page.set(0);
-    this.loadTrigger.next();
-  }
-
-  onMinScoreChange(minScore: number | null): void {
-    this.minScoreInput.next(minScore);
-  }
-
-  previousPage(): void {
-    if (this.page() > 0) {
-      this.page.update((page) => page - 1);
-      this.loadTrigger.next();
+  protected open(event: Event, match: AdminMatchListDto): void {
+    if (!isInteractiveTarget(event)) {
+      this.openDetails(match);
     }
   }
 
-  nextPage(): void {
-    if (this.page() + 1 < this.totalPages()) {
-      this.page.update((page) => page + 1);
-      this.loadTrigger.next();
-    }
-  }
-
-  openDetails(match: AdminMatchListDto): void {
-    // Guard, not just cosmetics: double-clicking a row would otherwise fire two requests and
-    // stack two modals on top of each other.
-    if (this.detailsLoading()) {
+  protected openDetails(match: AdminMatchListDto): void {
+    if (this.openingId() !== null) {
       return;
     }
-    this.detailsLoading.set(true);
-
+    this.openingId.set(match.id);
     this.matchesApi
       .getMatch(match.id)
       .pipe(
-        tap((details) => {
-          this.detailsLoading.set(false);
-          this.modalService.openCentralModal(MatchDetailsModalComponent, {
-            initialState: { data: details },
-          });
-        }),
+        finalize(() => this.openingId.set(null)),
+        tap((details) => this.modalService.openCentralModal(MatchDetailsModalComponent, { initialState: { data: details } })),
         catchError(() => {
-          this.detailsLoading.set(false);
+          this.toastService.error('Could not load the match');
           return EMPTY;
         }),
-        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
-  }
-
-  dismissalLabel(match: AdminMatchListDto): string | null {
-    if (match.lostDismissedAt && match.foundDismissedAt) {
-      return 'Both sides';
-    }
-    if (match.lostDismissedAt) {
-      return 'Lost side';
-    }
-    if (match.foundDismissedAt) {
-      return 'Found side';
-    }
-    return null;
   }
 }

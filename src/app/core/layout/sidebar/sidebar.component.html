@@ -1,35 +1,36 @@
-<nav class="sidebar">
-  <h5 class="sidebar__title">Lost & Found Admin</h5>
-  <ul class="nav flex-column gap-1">
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <i class="fa-solid fa-gauge"></i> Dashboard
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/reports" routerLinkActive="active">
-        <i class="fa-solid fa-file-lines"></i> Reports
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/users" routerLinkActive="active">
-        <i class="fa-solid fa-users"></i> Users
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/abuse-reports" routerLinkActive="active">
-        <i class="fa-solid fa-flag"></i> Abuse Reports
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/matches" routerLinkActive="active">
-        <i class="fa-solid fa-link"></i> Matches
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" routerLink="/definitions" routerLinkActive="active">
-        <i class="fa-solid fa-sliders"></i> Definitions
-      </a>
-    </li>
-  </ul>
+<nav class="sidebar" aria-label="Main">
+  <a class="sidebar__brand" routerLink="/" (click)="navigate.emit()">
+    <span class="sidebar__mark" aria-hidden="true">L&amp;F</span>
+    <span class="sidebar__name">Lost &amp; Found</span>
+    <span class="sidebar__scope">Admin</span>
+  </a>
+
+  @for (group of groups; track $index) {
+    <div class="sidebar__group">
+      @if (group.label) {
+        <p class="sidebar__group-label">{{ group.label }}</p>
+      }
+      <ul class="sidebar__list">
+        @for (item of group.items; track item.path) {
+          <li>
+            <a
+              class="sidebar__link"
+              [routerLink]="item.path"
+              routerLinkActive="sidebar__link--active"
+              #active="routerLinkActive"
+              [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+              [attr.aria-current]="active.isActive ? 'page' : null"
+              (click)="navigate.emit()"
+            >
+              <i class="fa-solid sidebar__icon" [class]="item.icon" aria-hidden="true"></i>
+              <span class="sidebar__label">{{ item.label }}</span>
+              @if (item.countKey && counts()[item.countKey]; as count) {
+                <span class="sidebar__count tabular" [attr.aria-label]="count + ' waiting'">{{ count }}</span>
+              }
+            </a>
+          </li>
+        }
+      </ul>
+    </div>
+  }
 </nav>

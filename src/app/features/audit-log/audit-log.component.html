@@ -1,0 +1,90 @@
+<div class="page page--fill">
+  <app-page-header title="Audit log" description="Every moderation and configuration action, with who made it and when. Entries cannot be edited or removed." />
+
+  <div class="toolbar">
+    <app-select ariaLabel="Action" emptyLabel="All actions" width="220px" [options]="actionOptions" [value]="query.state().filters.action" (valueChange)="query.setFilter('action', $event)" />
+    <app-select ariaLabel="Target" emptyLabel="Any target" width="160px" [options]="targetOptions" [value]="query.state().filters.targetType" (valueChange)="query.setFilter('targetType', $event)" />
+    @if (query.state().filters.targetId; as targetId) {
+      <span class="filter-chip">
+        <span class="filter-chip__label">Target</span>
+        <span class="mono">#{{ targetId }}</span>
+        <button type="button" class="filter-chip__remove" aria-label="Remove target filter" (click)="query.setFilter('targetId', null)">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </span>
+    }
+    @if (query.state().filters.actorId; as actorId) {
+      <span class="filter-chip">
+        <span class="filter-chip__label">By</span>
+        <span class="mono">#{{ actorId }}</span>
+        <button type="button" class="filter-chip__remove" aria-label="Remove moderator filter" (click)="query.setFilter('actorId', null)">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </span>
+    }
+    @if (filtered()) {
+      <button type="button" class="btn btn-ghost btn-sm" (click)="query.clearFilters()">Clear filters</button>
+    }
+  </div>
+
+  <app-data-table
+    caption="Audit log"
+    [columns]="columns"
+    [rows]="loader.rows()"
+    [total]="loader.total()"
+    [page]="query.state().page"
+    [size]="query.state().size"
+    [pageSizes]="query.pageSizes"
+    [sort]="query.state().sort"
+    [direction]="query.state().direction"
+    [loading]="loader.loading()"
+    [loaded]="loader.loaded()"
+    [error]="loader.error()"
+    (sortChange)="query.toggleSort($event)"
+    (pageChange)="query.setPage($event)"
+    (sizeChange)="query.setSize($event)"
+    (retry)="loader.reload()"
+  >
+    <ng-template appTableRow [appTableRowOf]="loader.rows()" let-row>
+      <tr>
+        <td class="tabular" [title]="row.createdAt | date: 'd MMM y, HH:mm:ss'">
+          {{ row.createdAt | date: 'd MMM, HH:mm' }}
+          <span class="d-block cell-muted">{{ row.createdAt | relativeTime }}</span>
+        </td>
+        <td>
+          {{ actionLabel[row.action] }}
+          <span class="d-block cell-muted">{{ targetLabel[row.targetType] }}</span>
+        </td>
+        <td>
+          @if (targetLink(row); as link) {
+            <a class="cell-link" [routerLink]="link">{{ row.summary }}</a>
+          } @else {
+            {{ row.summary }}
+          }
+        </td>
+        <td>
+          @if (row.actorId != null) {
+            <button type="button" class="link-button" [title]="'Show only actions by ' + row.actorName" (click)="query.setFilter('actorId', row.actorId)">{{ row.actorName }}</button>
+          } @else {
+            {{ row.actorName }}
+          }
+        </td>
+        <td class="text-end">
+          @if (hasDetails(row)) {
+            <button type="button" class="btn btn-ghost btn-sm" [attr.aria-expanded]="expanded() === row.id" (click)="toggle(row)">
+              {{ expanded() === row.id ? 'Hide' : 'Details' }}
+            </button>
+          }
+        </td>
+      </tr>
+      @if (expanded() === row.id) {
+        <tr class="details-row">
+          <td colspan="5"><pre class="details mono">{{ row.details | json }}</pre></td>
+        </tr>
+      }
+    </ng-template>
+    <ng-template appTableEmpty>
+      <p class="mb-0 text-center fw-semibold">{{ filtered() ? 'No actions match these filters' : 'No moderator actions yet' }}</p>
+    </ng-template>
+  </app-data-table>
+</div>

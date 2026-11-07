@@ -11,7 +11,8 @@ export class ConfirmModalService {
 
   openConfirm(messageContent: string, config?: Partial<ConfirmModalInitialState>): Observable<boolean> {
     const modalRef = this.modalService.show(ConfirmModalComponent, {
-      class: 'modal-dialog-centered',
+      class: 'bo-modal-confirm modal-dialog-centered',
+      ariaLabelledBy: 'confirm-title',
       keyboard: true,
       initialState: {
         data: {
@@ -20,7 +21,6 @@ export class ConfirmModalService {
           confirmText: 'Confirm',
           cancelText: 'Cancel',
           destructive: false,
-          visibleCloseButton: true,
           ...config,
         },
       },

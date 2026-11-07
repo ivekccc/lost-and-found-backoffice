@@ -1,0 +1,35 @@
+<figure class="chart" aria-hidden="true">
+  <div class="chart__axis tabular">
+    <span>{{ max() }}</span>
+    <span>{{ max() / 2 }}</span>
+    <span>0</span>
+  </div>
+  <div class="chart__plot">
+    <div class="chart__grid"><span></span><span></span><span></span></div>
+    <div class="chart__bars">
+      @for (day of days(); track day.day) {
+        <div class="chart__day" [title]="(day.day | date: 'EEE d MMM') + ' — posted ' + day.reportsPosted + ', reunited ' + day.reportsReunited">
+          <span class="chart__bar chart__bar--posted" [style.height.%]="height(day.reportsPosted)"></span>
+          <span class="chart__bar chart__bar--reunited" [style.height.%]="height(day.reportsReunited)"></span>
+        </div>
+      }
+    </div>
+    <div class="chart__labels">
+      @for (day of days(); track day.day) {
+        <span>{{ labelDays().has(day.day) ? (day.day | date: 'd MMM') : '' }}</span>
+      }
+    </div>
+  </div>
+</figure>
+
+<table class="visually-hidden">
+  <caption>Reports posted and reunited per day</caption>
+  <thead>
+    <tr><th scope="col">Day</th><th scope="col">Posted</th><th scope="col">Reunited</th><th scope="col">New users</th></tr>
+  </thead>
+  <tbody>
+    @for (day of days(); track day.day) {
+      <tr><th scope="row">{{ day.day | date: 'd MMMM y' }}</th><td>{{ day.reportsPosted }}</td><td>{{ day.reportsReunited }}</td><td>{{ day.usersRegistered }}</td></tr>
+    }
+  </tbody>
+</table>

@@ -1,159 +1,87 @@
 @if (loading()) {
-  <app-details-skeleton />
+  <span class="skeleton skeleton--settings"></span>
 } @else if (error()) {
-  <app-error-state (retry)="load()" />
+  <div class="panel"><app-error-state (retry)="load()" /></div>
 } @else {
-  <form [formGroup]="form" (ngSubmit)="submit()">
-    <div class="card mb-3">
-      <div class="card-body">
-        <h5 class="mb-1">Scoring weights</h5>
-        <p class="text-muted small mb-3">
-          How much each signal contributes to a match score. These three must add up to
-          exactly 100, which is what makes the stored score readable as a percentage.
-        </p>
-
-        <div class="row g-3">
-          <div class="col-md-4">
-            <div class="form-control-wrapper">
-              <label for="weightDistance">Distance weight</label>
-              <input
-                type="number"
-                class="form-control"
-                id="weightDistance"
-                formControlName="weightDistance"
-                min="0"
-                max="100"
-                [ngClass]="{ 'is-invalid': form.controls.weightDistance.touched && form.controls.weightDistance.invalid }"
-              />
-            </div>
+  <form class="settings" [formGroup]="form" (ngSubmit)="submit()">
+    <section class="panel" aria-labelledby="weights-heading">
+      <header class="panel__header"><h2 id="weights-heading">Scoring weights</h2></header>
+      <div class="panel__body">
+        <p class="settings__intro">How much each signal adds to a match score. The three add up to exactly 100, so a score reads as a percentage.</p>
+        <div class="settings__grid">
+          <div>
+            <label class="form-label" for="weightDistance">Distance</label>
+            <input type="number" class="form-control tabular" id="weightDistance" formControlName="weightDistance" min="0" max="100" [class.is-invalid]="weightInvalid('weightDistance')" [attr.aria-invalid]="weightInvalid('weightDistance')" [attr.aria-describedby]="weightDescribedBy('weightDistance')" />
+            @if (fieldError('weightDistance'); as message) {
+              <p class="invalid-feedback d-block mb-0" [id]="'weightDistance-error'">{{ message }}</p>
+            }
           </div>
-          <div class="col-md-4">
-            <div class="form-control-wrapper">
-              <label for="weightText">Text weight</label>
-              <input
-                type="number"
-                class="form-control"
-                id="weightText"
-                formControlName="weightText"
-                min="0"
-                max="100"
-                [ngClass]="{ 'is-invalid': form.controls.weightText.touched && form.controls.weightText.invalid }"
-              />
-            </div>
+          <div>
+            <label class="form-label" for="weightText">Text</label>
+            <input type="number" class="form-control tabular" id="weightText" formControlName="weightText" min="0" max="100" [class.is-invalid]="weightInvalid('weightText')" [attr.aria-invalid]="weightInvalid('weightText')" [attr.aria-describedby]="weightDescribedBy('weightText')" />
+            @if (fieldError('weightText'); as message) {
+              <p class="invalid-feedback d-block mb-0" [id]="'weightText-error'">{{ message }}</p>
+            }
           </div>
-          <div class="col-md-4">
-            <div class="form-control-wrapper">
-              <label for="weightTime">Time weight</label>
-              <input
-                type="number"
-                class="form-control"
-                id="weightTime"
-                formControlName="weightTime"
-                min="0"
-                max="100"
-                [ngClass]="{ 'is-invalid': form.controls.weightTime.touched && form.controls.weightTime.invalid }"
-              />
-            </div>
+          <div>
+            <label class="form-label" for="weightTime">Time</label>
+            <input type="number" class="form-control tabular" id="weightTime" formControlName="weightTime" min="0" max="100" [class.is-invalid]="weightInvalid('weightTime')" [attr.aria-invalid]="weightInvalid('weightTime')" [attr.aria-describedby]="weightDescribedBy('weightTime')" />
+            @if (fieldError('weightTime'); as message) {
+              <p class="invalid-feedback d-block mb-0" [id]="'weightTime-error'">{{ message }}</p>
+            }
           </div>
         </div>
-
-        <div
-          class="alert mt-3 mb-0 py-2"
-          [class.alert-success]="weightsSum() === 100"
-          [class.alert-danger]="weightsSum() !== 100"
-        >
-          Distance {{ form.controls.weightDistance.value ?? 0 }} + Text
-          {{ form.controls.weightText.value ?? 0 }} + Time
-          {{ form.controls.weightTime.value ?? 0 }} =
-          <strong>{{ weightsSum() }}</strong>
-          @if (weightsSum() === 100) {
-            <i class="fa-solid fa-check ms-1"></i>
-          } @else if (weightsDifference() > 0) {
-            — must be exactly 100, {{ weightsDifference() }} too many
-          } @else {
-            — must be exactly 100, {{ -weightsDifference() }} short
+        <p id="weights-sum" class="settings__sum tabular" [class.settings__sum--invalid]="weightsSum() !== 100" role="status">
+          Total {{ weightsSum() }} of 100
+          @if (weightsSum() !== 100) {
+            · {{ weightsDifference() > 0 ? weightsDifference() + ' too many' : -weightsDifference() + ' short' }}
           }
-        </div>
-      </div>
-    </div>
-
-    <div class="card mb-3">
-      <div class="card-body">
-        <h5 class="mb-1">Cut-offs</h5>
-        <p class="text-muted small mb-3">
-          These are not weights and do not count towards the 100.
         </p>
+      </div>
+    </section>
 
-        <div class="row g-3">
-          <div class="col-md-4">
-            <div class="form-control-wrapper">
-              <label for="maxDistanceKm">Max distance (km)</label>
-              <input
-                type="number"
-                class="form-control"
-                id="maxDistanceKm"
-                formControlName="maxDistanceKm"
-                min="0.1"
-                step="0.5"
-                [ngClass]="{ 'is-invalid': form.controls.maxDistanceKm.touched && form.controls.maxDistanceKm.invalid }"
-              />
-              <span class="text-muted small">Candidates further apart are dropped before scoring</span>
-            </div>
+    <section class="panel" aria-labelledby="cutoffs-heading">
+      <header class="panel__header"><h2 id="cutoffs-heading">Cut-offs</h2></header>
+      <div class="panel__body">
+        <div class="settings__grid">
+          <div>
+            <label class="form-label" for="maxDistanceKm">Maximum distance, km</label>
+            <input type="number" class="form-control tabular" id="maxDistanceKm" formControlName="maxDistanceKm" min="0.1" step="0.5" [attr.aria-describedby]="fieldError('maxDistanceKm') ? 'maxDistanceKm-error maxDistanceHint' : 'maxDistanceHint'" [class.is-invalid]="fieldError('maxDistanceKm')" [attr.aria-invalid]="!!fieldError('maxDistanceKm')" />
+            @if (fieldError('maxDistanceKm'); as message) {
+              <p class="invalid-feedback d-block mb-0" [id]="'maxDistanceKm-error'">{{ message }}</p>
+            }
+            <p class="form-text" id="maxDistanceHint">Pairs further apart are never scored</p>
           </div>
-          <div class="col-md-4">
-            <div class="form-control-wrapper">
-              <label for="timeDecayDays">Time decay (days)</label>
-              <input
-                type="number"
-                class="form-control"
-                id="timeDecayDays"
-                formControlName="timeDecayDays"
-                min="1"
-                [ngClass]="{ 'is-invalid': form.controls.timeDecayDays.touched && form.controls.timeDecayDays.invalid }"
-              />
-              <span class="text-muted small">After this many days the time signal contributes nothing</span>
-            </div>
+          <div>
+            <label class="form-label" for="timeDecayDays">Time decay, days</label>
+            <input type="number" class="form-control tabular" id="timeDecayDays" formControlName="timeDecayDays" min="1" [attr.aria-describedby]="fieldError('timeDecayDays') ? 'timeDecayDays-error timeDecayHint' : 'timeDecayHint'" [class.is-invalid]="fieldError('timeDecayDays')" [attr.aria-invalid]="!!fieldError('timeDecayDays')" />
+            @if (fieldError('timeDecayDays'); as message) {
+              <p class="invalid-feedback d-block mb-0" [id]="'timeDecayDays-error'">{{ message }}</p>
+            }
+            <p class="form-text" id="timeDecayHint">After this, time adds nothing to the score</p>
           </div>
-          <div class="col-md-4">
-            <div class="form-control-wrapper">
-              <label for="scoreThreshold">Score threshold</label>
-              <input
-                type="number"
-                class="form-control"
-                id="scoreThreshold"
-                formControlName="scoreThreshold"
-                min="0"
-                max="100"
-                [ngClass]="{ 'is-invalid': form.controls.scoreThreshold.touched && form.controls.scoreThreshold.invalid }"
-              />
-              <span class="text-muted small">Minimum total score for a pair to be suggested</span>
-            </div>
+          <div>
+            <label class="form-label" for="scoreThreshold">Score threshold</label>
+            <input type="number" class="form-control tabular" id="scoreThreshold" formControlName="scoreThreshold" min="0" max="100" [attr.aria-describedby]="fieldError('scoreThreshold') ? 'scoreThreshold-error thresholdHint' : 'thresholdHint'" [class.is-invalid]="fieldError('scoreThreshold')" [attr.aria-invalid]="!!fieldError('scoreThreshold')" />
+            @if (fieldError('scoreThreshold'); as message) {
+              <p class="invalid-feedback d-block mb-0" [id]="'scoreThreshold-error'">{{ message }}</p>
+            }
+            <p class="form-text" id="thresholdHint">Lowest total that is suggested to users</p>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div class="d-flex align-items-center gap-3">
-      <button
-        type="submit"
-        class="btn btn-primary"
-        [disabled]="saving() || form.invalid || weightsSum() !== 100"
-      >
-        @if (saving()) {
-          <span class="spinner-border spinner-border-sm me-2"></span>
-        }
-        Save
+    <div class="settings__footer">
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">
+        {{ saving() ? 'Saving…' : 'Save changes' }}
       </button>
-
-      @if (updatedAt()) {
-        <span class="text-muted small">Last changed {{ updatedAt() | date: 'dd.MM.yyyy. HH:mm' }}</span>
-      }
+      <p class="mb-0 cell-muted">
+        Applies to matches computed from now on; existing matches keep the values they were scored with.
+        @if (updatedAt()) {
+          Last changed {{ updatedAt() | date: 'd MMM y, HH:mm' }}.
+        }
+      </p>
     </div>
-
-    <p class="text-muted small mt-3 mb-0">
-      Saved values apply to matches computed from now on. Matches that already exist keep the
-      parameters they were scored with, so their breakdown stays reproducible — they are not
-      recalculated.
-    </p>
   </form>
 }

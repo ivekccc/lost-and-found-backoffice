@@ -1,0 +1,120 @@
+.palette {
+  display: flex;
+  flex-direction: column;
+  width: min(560px, calc(100vw - 2rem));
+  max-height: min(480px, calc(100vh - 6rem));
+  overflow: hidden;
+  color: var(--app-text);
+  background-color: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  box-shadow: var(--app-overlay-shadow);
+  animation: app-pop-in var(--app-duration-fast) var(--app-ease-out);
+
+  &__search {
+    display: flex;
+    align-items: center;
+    gap: var(--app-space-3);
+    height: 48px;
+    padding: 0 var(--app-space-4);
+    border-bottom: 1px solid var(--app-border);
+  }
+
+  &__search-icon {
+    color: var(--app-text-muted);
+  }
+
+  &__input {
+    flex: 1;
+    min-width: 0;
+    font-size: var(--app-text-md);
+    color: var(--app-text);
+    background: none;
+    border: none;
+    outline: none;
+
+    &::placeholder {
+      color: var(--app-text-muted);
+    }
+  }
+
+  &__list {
+    flex: 1;
+    margin: 0;
+    padding: var(--app-space-1);
+    overflow-y: auto;
+    list-style: none;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: var(--app-space-3);
+    height: 36px;
+    padding: 0 var(--app-space-3);
+    border-radius: var(--app-radius);
+    cursor: pointer;
+
+    &--active {
+      background-color: var(--app-neutral-soft);
+      box-shadow: inset 0 0 0 2px var(--app-accent);
+    }
+  }
+
+  &__label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__detail {
+    margin-left: auto;
+    padding-left: var(--app-space-3);
+    font-size: var(--app-text-sm);
+    color: var(--app-text-muted);
+    white-space: nowrap;
+  }
+
+  &__icon {
+    width: 16px;
+    font-size: 13px;
+    text-align: center;
+    color: var(--app-text-muted);
+  }
+
+  &__item--active &__icon {
+    color: var(--app-accent);
+  }
+
+  &__empty {
+    padding: var(--app-space-4);
+    color: var(--app-text-muted);
+    text-align: center;
+  }
+
+  &__status {
+    margin: 0;
+    padding: var(--app-space-2) var(--app-space-4);
+    font-size: var(--app-text-sm);
+    color: var(--app-text-muted);
+    border-top: 1px solid var(--app-border);
+  }
+
+  &__footer {
+    display: flex;
+    gap: var(--app-space-4);
+    padding: var(--app-space-2) var(--app-space-4);
+    font-size: var(--app-text-xs);
+    color: var(--app-text-muted);
+    border-top: 1px solid var(--app-border);
+
+    .kbd + .kbd {
+      margin-left: 2px;
+    }
+
+    .kbd {
+      margin-right: 4px;
+    }
+  }
+}

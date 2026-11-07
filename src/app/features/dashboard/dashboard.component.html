@@ -1,2 +1,144 @@
-<h4>Dashboard</h4>
-<p class="text-muted">Welcome to Lost & Found Admin Panel.</p>
+<div class="page">
+  <app-page-header title="Overview" description="What needs a moderator now, and how the platform is doing." />
+
+  <div class="overview">
+    <div class="overview__main">
+      <section class="panel" aria-labelledby="queues-heading">
+        <header class="panel__header">
+          <h2 id="queues-heading">Needs attention</h2>
+        </header>
+        @if (queueCounts.error() && !queueCounts.current()) {
+          <app-panel-state [loaded]="true" [empty]="false" [error]="true" emptyText="" errorText="Could not load the queues." (retry)="queueCounts.refresh(true)" />
+        }
+        <ul class="queues">
+          <li class="queue">
+            <div class="queue__text">
+              <a class="queue__title" routerLink="/abuse-reports">Abuse reports</a>
+              <p class="queue__meta">
+                @if (queueCounts.current()?.oldestPendingAbuseReportAt; as oldest) {
+                  Oldest filed <span [title]="oldest | date: 'd MMM y, HH:mm'">{{ oldest | relativeTime }}</span>
+                } @else {
+                  Complaints about listings, users and messages
+                }
+              </p>
+            </div>
+            <span class="queue__count tabular" [class.queue__count--clear]="!queueCounts.current()?.pendingAbuseReports">
+              {{ queueCounts.current()?.pendingAbuseReports ?? '–' }}
+            </span>
+          </li>
+          <li class="queue">
+            <div class="queue__text">
+              <a class="queue__title" routerLink="/claims" [queryParams]="pendingClaims">Ownership claims waiting</a>
+              <p class="queue__meta">
+                @if (queueCounts.current()?.oldestPendingClaimAt; as oldest) {
+                  Oldest submitted <span [title]="oldest | date: 'd MMM y, HH:mm'">{{ oldest | relativeTime }}</span>, decided by the finder
+                } @else {
+                  Decided by the finder, watched here for stalls
+                }
+              </p>
+            </div>
+            <span class="queue__count tabular" [class.queue__count--clear]="!queueCounts.current()?.pendingClaims">
+              {{ queueCounts.current()?.pendingClaims ?? '–' }}
+            </span>
+          </li>
+          <li class="queue">
+            <div class="queue__text">
+              <a class="queue__title" routerLink="/reports" [queryParams]="flaggedReports">Hidden reports</a>
+              <p class="queue__meta">Listings taken down by moderation, waiting to be restored or left hidden</p>
+            </div>
+            <span class="queue__count tabular" [class.queue__count--clear]="!queueCounts.current()?.flaggedReports">
+              {{ queueCounts.current()?.flaggedReports ?? '–' }}
+            </span>
+          </li>
+        </ul>
+      </section>
+
+      <section class="panel" aria-labelledby="activity-heading">
+        <header class="panel__header">
+          <h2 id="activity-heading">Activity</h2>
+          <app-segmented label="Period" [options]="ranges" [value]="'' + range()" (change)="setRange($event)" />
+        </header>
+        <div class="panel__body">
+          @if (activityError(); as error) {
+            <app-error-state [title]="error.title" [message]="error.detail ?? ''" (retry)="activity.reload()" />
+          } @else if (!activity.loaded()) {
+            <span class="skeleton skeleton--chart"></span>
+          } @else {
+            <dl class="totals tabular">
+              <div class="totals__item">
+                <dt><span class="totals__swatch totals__swatch--posted" aria-hidden="true"></span>Reports posted</dt>
+                <dd>{{ totals().posted }}</dd>
+              </div>
+              <div class="totals__item">
+                <dt><span class="totals__swatch totals__swatch--reunited" aria-hidden="true"></span>Reunited</dt>
+                <dd>{{ totals().reunited }}</dd>
+              </div>
+              <div class="totals__item">
+                <dt>New users</dt>
+                <dd>{{ totals().users }}</dd>
+              </div>
+            </dl>
+            <app-activity-chart [days]="activity.rows()" />
+          }
+        </div>
+      </section>
+    </div>
+
+    <div class="overview__side">
+      <section class="panel" aria-labelledby="recent-heading">
+        <header class="panel__header">
+          <h2 id="recent-heading">Recent moderation</h2>
+          <a class="btn btn-ghost btn-sm" routerLink="/audit-log">View all</a>
+        </header>
+        <app-panel-state [loaded]="recent.loaded()" [empty]="!recent.rows().length" [error]="recent.error()" emptyText="No moderator actions yet." errorText="Could not load recent actions." (retry)="recent.reload()" />
+        @if (recent.rows().length) {
+          <ol class="timeline">
+            @for (entry of recent.rows(); track entry.id) {
+              <li class="timeline__item">
+                <p class="timeline__summary">
+                  @if (targetLink(entry); as link) {
+                    <a class="cell-link" [routerLink]="link">{{ entry.summary }}</a>
+                  } @else {
+                    {{ entry.summary }}
+                  }
+                </p>
+                <p class="timeline__meta">
+                  {{ entry.actorName }} ·
+                  <span [title]="entry.createdAt | date: 'd MMM y, HH:mm'">{{ entry.createdAt | relativeTime }}</span>
+                </p>
+              </li>
+            }
+          </ol>
+        }
+      </section>
+
+      <section class="panel" aria-labelledby="cities-heading">
+        <header class="panel__header">
+          <h2 id="cities-heading">Cities</h2>
+        </header>
+        @if (cities.rows().length) {
+        <table class="table">
+          <caption class="visually-hidden">Reports per city</caption>
+          <thead>
+            <tr>
+              <th scope="col">City</th>
+              <th scope="col" class="text-end">Active</th>
+              <th scope="col" class="text-end">Reunited, {{ range() }} days</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (city of cities.rows(); track city.cityId) {
+              <tr>
+                <td><a class="cell-link" routerLink="/reports" [queryParams]="{ cityId: city.cityId }">{{ city.cityName }}</a></td>
+                <td class="text-end">{{ city.activeReports }}</td>
+                <td class="text-end">{{ city.reunitedReports }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        }
+        <app-panel-state [loaded]="cities.loaded()" [empty]="!cities.rows().length" [error]="cities.error()" emptyText="No cities." errorText="Could not load cities." (retry)="cities.reload()" />
+      </section>
+    </div>
+  </div>
+</div>

@@ -4,5 +4,6 @@ export interface ConfirmModalInitialState {
   confirmText?: string;
   cancelText?: string;
   destructive?: boolean;
-  visibleCloseButton?: boolean;
+  requireText?: string;
+  requireTextLabel?: string;
 }

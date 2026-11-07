@@ -1,0 +1,49 @@
+<div class="page page--fill">
+  <app-page-header
+    title="Claims"
+    description="Ownership claims across all reports. The person who wrote the questions decides; moderators only oversee."
+  />
+
+  <div class="toolbar">
+    <app-segmented label="Status" [options]="segments()" [value]="activeSegment()" (change)="setStatus($event)" />
+  </div>
+
+  <app-data-table
+    caption="Ownership claims"
+    [columns]="columns"
+    [rows]="loader.rows()"
+    [total]="loader.total()"
+    [page]="query.state().page"
+    [size]="query.state().size"
+    [pageSizes]="query.pageSizes"
+    [sort]="query.state().sort"
+    [direction]="query.state().direction"
+    [loading]="loader.loading()"
+    [loaded]="loader.loaded()"
+    [error]="loader.error()"
+    (sortChange)="query.toggleSort($event)"
+    (pageChange)="query.setPage($event)"
+    (sizeChange)="query.setSize($event)"
+    (retry)="loader.reload()"
+  >
+    <ng-template appTableRow [appTableRowOf]="loader.rows()" let-row>
+      <tr>
+        <td class="mono cell-muted">{{ row.id }}</td>
+        <td>
+          <div class="cell-inline">
+            <app-status [value]="reportType[row.reportType]" />
+            <a class="cell-link cell-truncate" [routerLink]="['/reports', row.reportId]" [title]="row.reportTitle">{{ row.reportTitle }}</a>
+          </div>
+        </td>
+        <td><span class="cell-truncate">{{ row.claimantName ?? 'Deleted account' }}</span></td>
+        <td><span class="cell-truncate">{{ row.challengeAuthorName ?? 'Deleted account' }}</span></td>
+        <td><app-status [value]="claimStatus[row.status]" /></td>
+        <td class="cell-muted" [title]="row.submittedAt | date: 'd MMM y, HH:mm'">{{ row.submittedAt | relativeTime }}</td>
+        <td class="cell-muted" [title]="row.decidedAt ? (row.decidedAt | date: 'd MMM y, HH:mm') : ''">{{ row.decidedAt ? (row.decidedAt | relativeTime) : '—' }}</td>
+      </tr>
+    </ng-template>
+    <ng-template appTableEmpty>
+      <p class="mb-0 text-center fw-semibold">No claims here</p>
+    </ng-template>
+  </app-data-table>
+</div>

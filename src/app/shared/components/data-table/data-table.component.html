@@ -1,54 +1,106 @@
-<div class="data-table-heading d-flex align-items-center justify-content-between py-3">
-  <div class="d-flex align-items-center gap-2">
-    @if (headingText) {
-      <h5 class="fw-bold mb-0">
-        {{ headingText }} {{ data.length ? "(" + data.length + ")" : "" }}
-      </h5>
-    }
-    @if (showReload) {
-      <button
-        type="button"
-        class="btn btn-sm btn-link text-secondary"
-        title="Reload"
-        (click)="onReload()"
-      >
-        <i class="fa-solid fa-rotate-right"></i>
-      </button>
-    }
-  </div>
-  @if (buttonText) {
-    <button
-      type="button"
-      class="btn btn-outline-primary"
-      [disabled]="disableAddNew"
-      (click)="onAddNewData()"
-    >
-      <i class="fa-solid fa-plus me-1"></i>
-      {{ buttonText }}
-    </button>
-  }
-</div>
-
-<div class="data-table-container">
-  <table class="table table-hover mb-0">
-    <thead>
-      <ng-template [ngTemplateOutlet]="headerTemplate() || null"></ng-template>
-    </thead>
-    <tbody>
-      @if (data.length) {
-        @for (row of data; track $index) {
-          <ng-template
-            [ngTemplateOutlet]="rowTemplate() || null"
-            [ngTemplateOutletContext]="{ row }"
-          ></ng-template>
-        }
-      } @else {
+<div class="table-panel">
+  <div class="table-panel__scroll" [attr.aria-busy]="loading()">
+    <table class="table data-table" [class.data-table--stale]="loading() && loaded()">
+      <caption class="visually-hidden">{{ caption() }}</caption>
+      <thead>
         <tr>
-          <td class="text-center text-muted" [attr.colspan]="50">
-            {{ emptyMessage }}
-          </td>
+          @if (selectable()) {
+            <th scope="col" class="data-table__select">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                aria-label="Select all rows on this page"
+                [checked]="allSelected()"
+                [indeterminate]="someSelected()"
+                [disabled]="!rows().length"
+                (change)="toggleAll()"
+              />
+            </th>
+          }
+          @for (column of columns(); track column.key) {
+            <th
+              scope="col"
+              [style.width]="column.width"
+              [class.text-end]="column.align === 'end'"
+              [attr.aria-sort]="ariaSort(column)"
+            >
+              @if (column.hideLabel) {
+                <span class="visually-hidden">{{ column.label }}</span>
+              } @else if (column.sortKey) {
+                <button type="button" class="data-table__sort" [class.data-table__sort--active]="column.sortKey === sort()" (click)="sortChange.emit(column.sortKey)">
+                  {{ column.label }}
+                  <i
+                    class="fa-solid data-table__sort-icon"
+                    [class.fa-arrow-up]="column.sortKey === sort() && direction() === 'asc'"
+                    [class.fa-arrow-down]="column.sortKey !== sort() || direction() === 'desc'"
+                    aria-hidden="true"
+                  ></i>
+                </button>
+              } @else {
+                {{ column.label }}
+              }
+            </th>
+          }
         </tr>
-      }
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        @if (showSkeleton()) {
+          @for (row of skeletonRows; track row) {
+            <tr aria-hidden="true">
+              @for (column of columns(); track column.key; let first = $first) {
+                <td [attr.colspan]="first && selectable() ? 2 : null">
+                  <span class="skeleton skeleton--cell" [class.skeleton--cell-wide]="first"></span>
+                </td>
+              }
+            </tr>
+          }
+        } @else if (errorDescription(); as described) {
+          <tr>
+            <td [attr.colspan]="columnCount()" class="data-table__state">
+              <app-error-state
+                [title]="described.title"
+                [message]="described.detail ?? 'Try again in a moment.'"
+                [icon]="described.offline ? 'fa-wifi' : 'fa-triangle-exclamation'"
+                (retry)="retry.emit()"
+              />
+            </td>
+          </tr>
+        } @else if (!rows().length) {
+          <tr>
+            <td [attr.colspan]="columnCount()" class="data-table__state">
+              @if (emptyTemplate(); as empty) {
+                <ng-container [ngTemplateOutlet]="empty.template" />
+              } @else {
+                <p class="data-table__empty">Nothing here yet.</p>
+              }
+            </td>
+          </tr>
+        } @else {
+          @for (row of rows(); track rowId()(row)) {
+            <ng-container [ngTemplateOutlet]="rowTemplate().template" [ngTemplateOutletContext]="context(row)" />
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (paginated() && (total() > 0 || page() > 0)) {
+    <footer class="table-panel__footer">
+      <p class="table-panel__range tabular" aria-live="polite">
+        {{ firstRow() }}–{{ lastRow() }} of {{ total() }}
+      </p>
+      <div class="table-panel__pager">
+        <div class="table-panel__size">
+          <span aria-hidden="true">Rows</span>
+          <app-select ariaLabel="Rows per page" width="76px" [options]="sizeOptions()" [value]="'' + size()" (valueChange)="sizeChange.emit(+$event)" />
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm btn-icon" aria-label="Previous page" [disabled]="page() === 0" (click)="pageChange.emit(page() - 1)">
+          <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm btn-icon" aria-label="Next page" [disabled]="page() >= lastPage()" (click)="pageChange.emit(page() + 1)">
+          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+        </button>
+      </div>
+    </footer>
+  }
 </div>

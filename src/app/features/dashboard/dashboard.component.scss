@@ -1,0 +1,133 @@
+.overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: var(--app-space-4);
+  align-items: start;
+
+  &__main,
+  &__side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--app-space-4);
+    min-width: 0;
+  }
+}
+
+@media (max-width: 1199.98px) {
+  .overview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.queues {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.queue {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-4);
+  padding: var(--app-space-3) var(--app-space-4);
+
+  & + & {
+    border-top: 1px solid var(--app-border);
+  }
+
+  &__text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-weight: 600;
+    color: var(--app-text);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--app-accent-text);
+      text-decoration: underline;
+    }
+  }
+
+  &__meta {
+    margin: 2px 0 0;
+    font-size: var(--app-text-sm);
+    color: var(--app-text-muted);
+  }
+
+  &__count {
+    min-width: 48px;
+    font-size: var(--app-text-lg);
+    font-weight: 600;
+    text-align: right;
+
+    &--clear {
+      color: var(--app-text-muted);
+      font-weight: 400;
+    }
+  }
+}
+
+.totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--app-space-2) var(--app-space-6);
+  margin: 0 0 var(--app-space-4);
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  dt {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--app-text-sm);
+    font-weight: 400;
+    color: var(--app-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    font-size: var(--app-text-lg);
+    font-weight: 600;
+  }
+
+  &__swatch {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+
+    &--posted {
+      background-color: var(--app-text-secondary);
+    }
+
+    &--reunited {
+      background-color: var(--app-accent);
+    }
+  }
+}
+
+.timeline {
+  margin: 0;
+  padding: var(--app-space-2) 0;
+  list-style: none;
+
+  &__item {
+    padding: var(--app-space-2) var(--app-space-4);
+  }
+
+  &__summary {
+    margin: 0;
+  }
+
+  &__meta {
+    margin: 2px 0 0;
+    font-size: var(--app-text-sm);
+    color: var(--app-text-muted);
+  }
+}

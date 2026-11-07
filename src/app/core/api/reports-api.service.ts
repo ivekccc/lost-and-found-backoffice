@@ -2,33 +2,29 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   AdminReportDetailsDto,
-  AdminReportListDto,
+  PageAdminReportListDto,
   CreateReportRequest,
   ReportDetailsDto,
   ReportStatus,
   ReportType,
 } from '@lost-and-found/api';
-import { HttpParams } from '@angular/common/http';
 import { ApiService } from './api.service';
+import { PageQueryParams, toHttpParams } from './query-params';
+
+export interface AdminReportQuery extends PageQueryParams {
+  type?: ReportType;
+  status?: ReportStatus;
+  cityId?: number;
+  ownerId?: number;
+  search?: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ReportsApiService {
   constructor(private api: ApiService) {}
 
-  // Moderacija ide kroz admin/reports, ne kroz javni /reports: javni endpoint vraca
-  // samo ACTIVE oglase, izbacuje sopstvene i maskira lokaciju na nivo zone.
-  getReports(type?: ReportType, status?: ReportStatus, cityId?: number): Observable<AdminReportListDto[]> {
-    let params = new HttpParams();
-    if (type) {
-      params = params.append('type', type);
-    }
-    if (cityId) {
-      params = params.append('cityId', cityId);
-    }
-    if (status) {
-      params = params.append('status', status);
-    }
-    return this.api.get<AdminReportListDto[]>('admin/reports', params);
+  getReports(query: AdminReportQuery): Observable<PageAdminReportListDto> {
+    return this.api.get<PageAdminReportListDto>('admin/reports', toHttpParams(query));
   }
 
   getReportById(id: number): Observable<AdminReportDetailsDto> {

@@ -1,89 +1,110 @@
-<div class="mb-3" style="max-width: 260px">
-  <ng-select
-    [items]="statusOptions"
-    bindLabel="label"
-    bindValue="value"
-    placeholder="All statuses"
-    [ngModel]="selectedStatus()"
-    (ngModelChange)="onStatusChange($event)"
-  >
-  </ng-select>
-</div>
+<div class="page page--fill">
+  <app-page-header title="Abuse reports" description="Complaints about listings, users and chat messages. Act on the target, or dismiss the complaint." />
 
-@if (loading()) {
-  <app-data-table-skeleton [showReload]="true" [columnCount]="6" />
-} @else if (error()) {
-  <app-error-state
-    title="Unable to load reports"
-    message="The moderation queue could not be loaded. The server may be unreachable."
-    retryText="Retry"
-    (retry)="reload()"
-  />
-} @else {
+  <div class="toolbar">
+    <app-segmented label="Status" [options]="statusSegments()" [value]="activeSegment()" (change)="setStatus($event)" />
+    <app-select ariaLabel="Target" emptyLabel="Any target" width="150px" [options]="targetOptions" [value]="query.state().filters.targetType" (valueChange)="query.setFilter('targetType', $event)" />
+    <app-select ariaLabel="Reason" emptyLabel="Any reason" width="190px" [options]="reasonOptions" [value]="query.state().filters.reason" (valueChange)="query.setFilter('reason', $event)" />
+    @if (query.state().filters.reportId; as reportId) {
+      <span class="filter-chip">
+        <span class="filter-chip__label">Report</span>
+        <span class="mono">#{{ reportId }}</span>
+        <button type="button" class="filter-chip__remove" aria-label="Remove report filter" (click)="query.setFilter('reportId', null)">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </span>
+    }
+    @if (query.state().filters.userId; as userId) {
+      <span class="filter-chip">
+        <span class="filter-chip__label">User</span>
+        <span class="mono">#{{ userId }}</span>
+        <button type="button" class="filter-chip__remove" aria-label="Remove user filter" (click)="query.setFilter('userId', null)">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </span>
+    }
+  </div>
+
+  @if (selected().size > 0) {
+    <div class="bulk-bar" role="region" aria-label="Bulk actions">
+      <span class="bulk-bar__count">{{ selected().size }} selected</span>
+      <button type="button" class="btn btn-ghost btn-sm" (click)="clearSelection()">Clear</button>
+      <span class="bulk-bar__spacer"></span>
+      <button type="button" class="btn btn-secondary btn-sm" [disabled]="working()" (click)="dismissSelected()">
+        Dismiss {{ selected().size }}
+      </button>
+    </div>
+  }
+
   <app-data-table
-    [data]="reports()"
-    [headingText]="'Abuse Reports'"
-    [emptyMessage]="'No reports in this queue'"
-    [showReload]="true"
-    (reload)="reload()"
+    caption="Abuse reports"
+    [columns]="columns()"
+    [rows]="loader.rows()"
+    [total]="loader.total()"
+    [page]="query.state().page"
+    [size]="query.state().size"
+    [pageSizes]="query.pageSizes"
+    [sort]="query.state().sort"
+    [direction]="query.state().direction"
+    [loading]="loader.loading()"
+    [loaded]="loader.loaded()"
+    [error]="loader.error()"
+    [selectable]="isPendingView()"
+    [selectedIds]="selected()"
+    (selectionChange)="selected.set($event)"
+    (sortChange)="query.toggleSort($event)"
+    (pageChange)="query.setPage($event)"
+    (sizeChange)="query.setSize($event)"
+    (retry)="loader.reload()"
   >
-    <ng-template dataTableHeaderTemplate>
-      <tr>
-        <th>Target</th>
-        <th>Reason</th>
-        <th>Reporter</th>
-        <th>Status</th>
-        <th>Reported</th>
-        <th class="text-end">Actions</th>
+    <ng-template appTableRow [appTableRowOf]="loader.rows()" let-row let-isSelected="selected" let-toggle="toggle">
+      <tr [class.table-active]="isSelected">
+        @if (isPendingView()) {
+          <td>
+            <input class="form-check-input" type="checkbox" [checked]="isSelected" [attr.aria-label]="'Select report about ' + row.targetLabel" (change)="toggle()" />
+          </td>
+        }
+        <td>
+          <div class="target">
+            <span class="target__type">{{ targetLabel[row.targetType] }}</span>
+            @if (row.targetType === targetTypes.USER) {
+              <a class="cell-link cell-truncate" [routerLink]="['/users', row.targetUserId]" [title]="row.targetLabel">{{ row.targetLabel }}</a>
+            } @else if (row.targetType === targetTypes.MESSAGE) {
+              <button
+                type="button"
+                class="target__message cell-truncate"
+                [title]="row.targetLabel"
+                [disabled]="row.targetConversationId == null || openingConversation() === row.id"
+                (click)="openConversation(row)"
+              >“{{ row.targetLabel }}”</button>
+            } @else {
+              <a class="cell-link cell-truncate" [routerLink]="['/reports', row.targetReportId]" [title]="row.targetLabel">{{ row.targetLabel }}</a>
+            }
+          </div>
+          @if (row.message) {
+            <p class="target__note cell-truncate" [title]="row.message">{{ row.message }}</p>
+          }
+        </td>
+        <td>{{ reasonLabel[row.reason] }}</td>
+        <td><span class="cell-truncate">{{ row.reporterName }}</span></td>
+        <td class="cell-muted" [title]="row.createdAt | date: 'd MMM y, HH:mm'">{{ row.createdAt | relativeTime }}</td>
+        <td><app-status [value]="abuseStatus[row.status]" /></td>
+        <td class="text-end">
+          @if (row.status === pendingStatus) {
+            <button type="button" class="btn btn-ghost btn-sm" (click)="dismiss(row)">Dismiss</button>
+          }
+        </td>
       </tr>
     </ng-template>
-    <ng-template dataTableRowTemplate let-row="row">
-      <tr>
-        <td>
-          @if (row.targetType === AbuseTargetType.USER) {
-            <a [routerLink]="['/users', row.targetUserId]">
-              <i class="fa-solid fa-user me-1"></i>{{ row.targetLabel }}
-            </a>
-          } @else if (row.targetType === AbuseTargetType.MESSAGE) {
-            <button
-              type="button"
-              class="btn btn-link p-0 text-start message-link"
-              [disabled]="conversationLoading() || row.targetConversationId == null"
-              (click)="openConversation(row)"
-            >
-              <i class="fa-solid fa-comment me-1"></i>{{ row.targetLabel }}
-            </button>
-          } @else {
-            <a [routerLink]="['/reports', row.targetReportId]">
-              <i class="fa-solid fa-list me-1"></i>{{ row.targetLabel }}
-            </a>
-          }
-        </td>
-        <td>{{ reasonLabel(row.reason) }}</td>
-        <td>{{ row.reporterName }}</td>
-        <td>
-          <span class="badge"
-            [class.bg-warning]="row.status === 'PENDING'"
-            [class.bg-success]="row.status === 'REVIEWED_ACTIONED'"
-            [class.bg-secondary]="row.status === 'DISMISSED'">
-            {{ statusLabel(row.status) }}
-          </span>
-        </td>
-        <td>{{ row.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-        <td class="text-end">
-          @if (row.status === 'PENDING') {
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary"
-              (click)="dismiss(row)"
-            >
-              <i class="fa-solid fa-xmark me-1"></i> Dismiss
-            </button>
-          } @else {
-            <span class="text-muted small">—</span>
-          }
-        </td>
-      </tr>
+    <ng-template appTableEmpty>
+      <div class="text-center">
+        @if (isPendingView()) {
+          <p class="mb-1 fw-semibold">The queue is clear</p>
+          <p class="mb-0 cell-muted">New complaints appear here as soon as they are filed.</p>
+        } @else {
+          <p class="mb-0 fw-semibold">No reports match these filters</p>
+        }
+      </div>
     </ng-template>
   </app-data-table>
-}
+</div>

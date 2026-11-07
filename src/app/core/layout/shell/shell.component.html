@@ -1,8 +1,14 @@
-<div class="shell">
-  <app-sidebar />
-  <div class="shell__content">
-    <app-header />
-    <main class="shell__main">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="shell" [class.shell--navigation-open]="navigationOpen()">
+  <aside class="shell__sidebar" id="main-navigation" [attr.inert]="compact() && !navigationOpen() ? '' : null">
+    <app-sidebar [counts]="queueCounts.counts()" (navigate)="navigationOpen.set(false)" />
+  </aside>
+  @if (navigationOpen()) {
+    <div class="shell__scrim" aria-hidden="true" (click)="closeNavigation(true)"></div>
+  }
+  <div class="shell__content" [attr.inert]="compact() && navigationOpen() ? '' : null">
+    <app-header [navigationOpen]="navigationOpen()" (toggleNavigation)="toggleNavigation()" />
+    <main class="shell__main" id="main-content" tabindex="-1">
       <router-outlet />
     </main>
   </div>

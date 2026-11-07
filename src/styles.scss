@@ -1,121 +1,98 @@
 @import "@angular/cdk/overlay-prebuilt.css";
+@import "styles/bootstrap";
+@import "styles/tokens";
+@import "styles/base";
+@import "styles/components";
 
-:root {
-  --app-font-family: "Inter", sans-serif;
-  --app-border-color: #dee2e6;
-  --app-form-invalid-color: #dc3545;
-  --app-font-size-xs: 0.75rem;
-  --app-font-size-sm: 0.875rem;
-}
-
-body {
-  font-family: var(--app-font-family);
-}
-
-.form-control::placeholder {
-  opacity: 70%;
-}
-
-.form-control-wrapper {
-  position: relative;
-  margin-bottom: 1rem;
-
-  label {
-    display: block;
-    margin-bottom: 0.25rem;
-    font-size: var(--app-font-size-sm);
-    font-weight: 500;
-  }
-}
-
-.error-text {
-  position: absolute;
-  top: 100%;
-  font-size: var(--app-font-size-xs);
-  color: var(--app-form-invalid-color);
-  margin-top: 0.25rem;
-}
-
-$modal-width: 420px;
-$modal-width-lg: 1040px;
-$modal-padding: 32px;
+$modal-width: 440px;
+$modal-width-lg: 960px;
 
 .modal {
-  .bo-modal {
-    width: $modal-width !important;
-    max-width: $modal-width !important;
+  .bo-modal,
+  .bo-modal-large {
     height: 100%;
     margin: 0 !important;
     overflow: hidden;
 
     .modal-content {
-      width: $modal-width;
-      padding: $modal-padding;
-      border: none;
-      border-radius: 0;
       height: 100%;
+      padding: var(--app-space-5);
       overflow-y: auto;
+      border: none;
+      border-left: 1px solid var(--app-border);
+      border-radius: 0;
+      box-shadow: var(--app-overlay-shadow);
     }
+  }
 
-    &-right {
-      position: absolute;
-      top: 0;
-      right: 0;
-    }
-
-    &-left {
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
+  .bo-modal {
+    width: $modal-width !important;
+    max-width: $modal-width !important;
   }
 
   .bo-modal-large {
     width: $modal-width-lg !important;
-    max-width: $modal-width-lg !important;
-    height: 100%;
-    margin: 0 !important;
-    overflow: hidden;
-
-    .modal-content {
-      width: $modal-width-lg;
-      padding: $modal-padding;
-      border: none;
-      border-radius: 0;
-      height: 100%;
-      overflow-y: auto;
-    }
+    max-width: min($modal-width-lg, 100vw) !important;
   }
 
-  // Centrirani dijalog. Ne nasledjuje .bo-modal jer je ta geometrija bocna ploca preko cele
-  // visine; ovde visinu diktira sadrzaj, uz gornju granicu da duga racunica moze da se skroluje.
+  .bo-modal-right,
+  .bo-modal-large {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+
+  .bo-modal-left {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
   .bo-modal-center {
     width: $modal-width-lg !important;
     max-width: calc(100vw - 2rem) !important;
 
     .modal-content {
-      padding: $modal-padding;
-      border: none;
-      border-radius: 12px;
       max-height: calc(100vh - 4rem);
+      padding: var(--app-space-5);
       overflow-y: auto;
+    }
+  }
+
+  .bo-modal-confirm {
+    width: 420px !important;
+    max-width: calc(100vw - 2rem) !important;
+
+    .modal-content {
+      padding: var(--app-space-5);
     }
   }
 
   &.fade {
     .bo-modal-left {
-      transition: transform 0.3s ease-out !important;
       transform: translate(-100%, 0) !important;
+      transition: transform var(--app-duration-base) var(--app-ease-out) !important;
     }
-    .bo-modal-right {
-      transition: transform 0.3s ease-out !important;
+
+    .bo-modal-right,
+    .bo-modal-large {
       transform: translate(100%, 0) !important;
+      transition: transform var(--app-duration-base) var(--app-ease-out) !important;
+    }
+
+    .bo-modal-center,
+    .bo-modal-confirm {
+      transform: translateY(8px) !important;
+      transition: transform var(--app-duration-base) var(--app-ease-out) !important;
     }
   }
 
   &.show {
     .bo-modal-left,
-    .bo-modal-right {
+    .bo-modal-right,
+    .bo-modal-large,
+    .bo-modal-center,
+    .bo-modal-confirm {
       transform: none !important;
     }
   }
@@ -123,94 +100,63 @@ $modal-padding: 32px;
 
 .bo-modal-header {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: $modal-padding;
+  justify-content: space-between;
+  gap: var(--app-space-3);
+  margin-bottom: var(--app-space-5);
 
   h4 {
-    font-size: 1.75rem;
-    font-weight: 700;
     margin-bottom: 0;
+    font-size: var(--app-text-lg);
+    font-weight: 600;
   }
 
   .btn-close-modal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    font-size: var(--app-text-md);
+    color: var(--app-text-muted);
+    cursor: pointer;
     background: none;
     border: none;
-    font-size: 1.25rem;
-    color: #6c757d;
-    cursor: pointer;
-    padding: 0.25rem;
+    border-radius: var(--app-radius);
 
     &:hover {
-      color: #000;
+      color: var(--app-text);
+      background-color: var(--app-surface-hover);
     }
   }
 }
 
 .bo-modal-body {
-  margin-bottom: $modal-padding;
-
-  label {
-    margin-bottom: 2px;
-  }
+  margin-bottom: var(--app-space-5);
 }
 
 .bo-modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: var(--app-space-2);
 }
 
-.data-table-container {
-  table {
-    margin: 0;
+.form-control-wrapper {
+  position: relative;
+  margin-bottom: var(--app-space-4);
 
-    thead {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-
-      th {
-        font-weight: 700;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-        color: #6c757d;
-        white-space: nowrap;
-        background-color: #f8f9fa;
-        border-top: 1px solid #dee2e6;
-        border-bottom: 2px solid #dee2e6;
-        padding: 0.65rem 0.75rem;
-      }
-    }
-
-    tbody {
-      tr {
-        transition: background-color 0.15s ease;
-        cursor: pointer;
-
-        &:nth-child(odd) {
-          background-color: #ffffff;
-        }
-
-        &:nth-child(even) {
-          background-color: #fafbfc;
-        }
-
-        &:hover {
-          background-color: #fef1f0;
-        }
-      }
-
-      td {
-        font-size: 0.875rem;
-        vertical-align: middle;
-        padding: 0.85rem 0.75rem;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        max-width: 400px;
-      }
-    }
+  label {
+    display: block;
+    margin-bottom: var(--app-space-1);
+    font-size: var(--app-text-sm);
+    font-weight: 500;
+    color: var(--app-text-secondary);
   }
+}
+
+.error-text {
+  margin-top: var(--app-space-1);
+  font-size: var(--app-text-xs);
+  color: var(--app-danger);
 }
