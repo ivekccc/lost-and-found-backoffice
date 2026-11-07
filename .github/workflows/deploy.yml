@@ -1,0 +1,58 @@
+name: Build & Deploy Backoffice to Azure Static Web Apps
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout backoffice
+        uses: actions/checkout@v4
+        with:
+          path: lost-and-found-backoffice
+
+      - name: Checkout API types
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/lost-and-found-api
+          path: lost-and-found-api
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            lost-and-found-api/package-lock.json
+            lost-and-found-backoffice/package-lock.json
+
+      - name: Build API types
+        working-directory: lost-and-found-api
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build backoffice
+        working-directory: lost-and-found-backoffice
+        run: |
+          npm ci
+          npx ng build --configuration production
+
+      - name: Deploy to Azure Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: upload
+          app_location: lost-and-found-backoffice/dist/lost-and-found-backoffice/browser
+          skip_app_build: true
+          skip_api_build: true
