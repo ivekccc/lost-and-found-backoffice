@@ -1,1 +1,13 @@
-<div #mapContainer class="map-container"></div>
+<div #mapContainer class="map-view__canvas" [class.map-view__canvas--hidden]="failed()"></div>
+@if (failed()) {
+  <div class="map-view__error" role="status">
+    <p>The map could not be loaded.</p>
+    <button type="button" class="btn btn-secondary btn-sm" (click)="retry()">Try again</button>
+  </div>
+} @else {
+  <p class="map-view__attribution">
+    <a href="https://openfreemap.org" target="_blank" rel="noopener noreferrer">OpenFreeMap</a>
+    · <a href="https://www.openmaptiles.org" target="_blank" rel="noopener noreferrer">© OpenMapTiles</a>
+    · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a>
+  </p>
+}

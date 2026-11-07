@@ -1,7 +1,8 @@
 import { Injectable, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Subject, Observable, of, throwError, EMPTY } from 'rxjs';
-import { tap, switchMap, filter, take, catchError } from 'rxjs/operators';
+import { Observable, of, throwError, EMPTY, defer, firstValueFrom } from 'rxjs';
+import { tap, switchMap, catchError, finalize, shareReplay, timeout } from 'rxjs/operators';
 import { AuthRequestDto, UserRole } from '@lost-and-found/api';
 import { AuthApiService } from '../api/auth-api.service';
 import { UserApiService } from '../api/user-api.service';
@@ -18,15 +19,23 @@ export class AuthService {
   private _isAuthenticated = signal(this.hasToken());
   isAuthenticated = this._isAuthenticated.asReadonly();
 
-  private isRefreshing = false;
-  private refreshSubject$ = new Subject<string>();
+  private readonly REFRESH_LOCK = 'lost-and-found-auth-refresh';
+  private readonly SESSION_REJECTED_STATUSES = [400, 401, 403];
+  private readonly REFRESH_TIMEOUT_MS = 15000;
+  private refreshInFlight$: Observable<string> | null = null;
 
   constructor(
     private authApi: AuthApiService,
     private userApi: UserApiService,
     private appStore: AppStore,
     private router: Router,
-  ) {}
+  ) {
+    window.addEventListener('storage', (event) => {
+      if ((event.key === this.TOKEN_KEY || event.key === null) && !localStorage.getItem(this.TOKEN_KEY) && this._isAuthenticated()) {
+        this.clearSession();
+      }
+    });
+  }
 
   login(data: AuthRequestDto) {
     return this.authApi.login(data).pipe(
@@ -45,37 +54,50 @@ export class AuthService {
     );
   }
 
-  refreshToken(): Observable<string> {
-    if (this.isRefreshing) {
-      return this.refreshSubject$.pipe(
-        filter((token) => token !== ''),
-        take(1),
+  refreshToken(rejectedToken: string): Observable<string> {
+    if (!this.refreshInFlight$) {
+      this.refreshInFlight$ = defer(() => this.withRefreshLock(() => this.rotateTokens(rejectedToken))).pipe(
+        catchError((error: unknown) => {
+          const current = localStorage.getItem(this.TOKEN_KEY);
+          if (current && current !== rejectedToken) {
+            return of(current);
+          }
+          if (error instanceof HttpErrorResponse && this.SESSION_REJECTED_STATUSES.includes(error.status)) {
+            this.clearSession();
+          }
+          return throwError(() => error);
+        }),
+        finalize(() => (this.refreshInFlight$ = null)),
+        shareReplay({ bufferSize: 1, refCount: false }),
       );
     }
-
-    this.isRefreshing = true;
-    const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
-
-    if (!refreshToken) {
-      this.handleRefreshFailure();
-      return throwError(() => new Error('No refresh token'));
-    }
-
-    return this.authApi.refresh({ refreshToken }).pipe(
-      tap((response) => {
-        localStorage.setItem(this.TOKEN_KEY, response.accessToken);
-        localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
-        this.isRefreshing = false;
-        this.refreshSubject$.next(response.accessToken);
-      }),
-      switchMap((response) => of(response.accessToken)),
-    );
+    return this.refreshInFlight$;
   }
 
-  handleRefreshFailure() {
-    this.isRefreshing = false;
-    this.refreshSubject$.next('');
-    this.clearSession();
+  private async withRefreshLock(task: () => Promise<string>): Promise<string> {
+    if (typeof navigator !== 'undefined' && navigator.locks) {
+      return navigator.locks.request(this.REFRESH_LOCK, task);
+    }
+    return task();
+  }
+
+  private async rotateTokens(rejectedToken: string): Promise<string> {
+    const current = localStorage.getItem(this.TOKEN_KEY);
+    if (current && current !== rejectedToken) {
+      return current;
+    }
+    const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    if (!refreshToken) {
+      throw new HttpErrorResponse({ status: 401, statusText: 'No refresh token' });
+    }
+    const response = await firstValueFrom(this.authApi.refresh({ refreshToken }).pipe(timeout(this.REFRESH_TIMEOUT_MS)));
+    if (localStorage.getItem(this.REFRESH_TOKEN_KEY) !== refreshToken) {
+      this.authApi.logout({ refreshToken: response.refreshToken }).pipe(catchError(() => EMPTY)).subscribe();
+      throw new HttpErrorResponse({ status: 401, statusText: 'Session ended during refresh' });
+    }
+    localStorage.setItem(this.TOKEN_KEY, response.accessToken);
+    localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
+    return response.accessToken;
   }
 
   logout() {

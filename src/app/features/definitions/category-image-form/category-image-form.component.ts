@@ -57,11 +57,13 @@ export class CategoryImageFormComponent {
           formData.append('timestamp', String(signature.timestamp));
           formData.append('api_key', signature.apiKey);
           formData.append('public_id', signature.publicId);
+          formData.append('allowed_formats', signature.allowedFormats);
+          formData.append('overwrite', String(signature.overwrite));
+          formData.append('transformation', signature.transformation);
           return this.cloudinaryApi.upload(signature.cloudName, formData);
         }),
         switchMap((result) => {
           const request: UpdateCategoryImageRequestDto = {
-            imageUrl: result.secure_url,
             imagePublicId: result.public_id,
           };
           return this.categoriesApi

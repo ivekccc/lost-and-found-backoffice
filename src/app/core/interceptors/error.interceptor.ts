@@ -2,16 +2,16 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { ToastService } from '../../shared/services/toast.service';
-import { environment } from '../../../environments/environment';
+import { apiPath, isApiRequest } from '../utils/api-url';
 import { describeHttpError } from '../utils/http-error';
 
 const SILENT_PATHS = ['/auth/login', '/auth/refresh', '/auth/logout'];
 
 export const errorInterceptor: HttpInterceptorFn = (request, next) => {
   const toastService = inject(ToastService);
-  const isApiCall = request.url.startsWith(environment.apiUrl);
+  const isApiCall = isApiRequest(request.url);
   const isRead = request.method === 'GET';
-  const isSilent = SILENT_PATHS.some((path) => request.url.includes(path));
+  const isSilent = SILENT_PATHS.includes(apiPath(request.url));
 
   return next(request).pipe(
     catchError((error: unknown) => {

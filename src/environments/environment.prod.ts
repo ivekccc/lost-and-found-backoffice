@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:8082',
+  apiUrl: 'https://lost-and-found-api.proudfield-731ae2ba.germanywestcentral.azurecontainerapps.io',
 };
