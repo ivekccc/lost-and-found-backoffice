@@ -44,6 +44,7 @@ export class MatchingConfigFormComponent implements OnInit {
   error = signal(false);
   saving = signal(false);
   updatedAt = signal<string | null>(null);
+  semanticModel = signal<string | null>(null);
 
   form = new FormGroup({
     maxDistanceKm: new FormControl<number | null>(null, [
@@ -73,6 +74,16 @@ export class MatchingConfigFormComponent implements OnInit {
       Validators.required,
       Validators.min(0),
       Validators.max(100),
+    ]),
+    trigramShare: new FormControl<number | null>(null, [
+      Validators.required,
+      Validators.min(0),
+      Validators.max(1),
+    ]),
+    semanticFloor: new FormControl<number | null>(null, [
+      Validators.required,
+      Validators.min(0),
+      Validators.max(0.95),
     ]),
   });
 
@@ -155,6 +166,8 @@ export class MatchingConfigFormComponent implements OnInit {
       weightTime: value.weightTime!,
       timeDecayDays: value.timeDecayDays!,
       scoreThreshold: value.scoreThreshold!,
+      trigramShare: value.trigramShare!,
+      semanticFloor: value.semanticFloor!,
     };
 
     this.saving.set(true);
@@ -188,10 +201,13 @@ export class MatchingConfigFormComponent implements OnInit {
         weightTime: config.weightTime,
         timeDecayDays: config.timeDecayDays,
         scoreThreshold: config.scoreThreshold,
+        trigramShare: config.trigramShare,
+        semanticFloor: config.semanticFloor,
       },
       { emitEvent: false },
     );
     this.updatedAt.set(config.updatedAt);
+    this.semanticModel.set(config.semanticModel ?? null);
     this.recomputeWeights();
   }
 
